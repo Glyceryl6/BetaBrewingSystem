@@ -1,0 +1,7 @@
+{
+    "variants": {
+        "normal": {
+            "model": "beta_brewing_system:brewing_cauldron_block"
+        }
+    }
+}
