@@ -9,15 +9,16 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -58,53 +59,58 @@ public class BlockBrewingCauldron extends BlockContainer {
         addCollisionBoxToList(pos, entityBox, collidingBoxes, AABB_WALL_SOUTH);
     }
 
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-        return FULL_BLOCK_AABB;
-    }
-
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer entityplayer, EnumHand hand, EnumFacing facing, float float1, float float2, float float3) {
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float f1, float f2, float f3) {
         if (world.isRemote) {
             world.notifyBlockUpdate(pos, state, state, 3);
         }
-        ItemStack heldItemStack = entityplayer.inventory.getCurrentItem();
+        ItemStack heldItemStack = player.inventory.getCurrentItem();
         TileEntity tileentity = world.getTileEntity(pos);
-        if (!(tileentity instanceof EntityBrewingCauldron))
-            return true;
+        if (!(tileentity instanceof EntityBrewingCauldron)) return true;
         EntityBrewingCauldron entityBrewingCauldron = (EntityBrewingCauldron)tileentity;
         int cauldronMetadata = entityBrewingCauldron.getLiquidData();
         if (heldItemStack.getItem() == Items.WATER_BUCKET) {
             if (entityBrewingCauldron.fillCauldronWithWaterBucket()) {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, new ItemStack(Items.BUCKET));
+                if (!player.capabilities.isCreativeMode) {
+                    player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(Items.BUCKET));
+                }
                 if (!entityBrewingCauldron.isCauldronDataZero() && cauldronMetadata != entityBrewingCauldron.getLiquidData()) {
                     world.notifyBlockUpdate(pos, state, state, 3);
                 }
+                world.playSound(null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
             return true;
         }
         if (heldItemStack.getItem() == Items.GLASS_BOTTLE) {
             if (!entityBrewingCauldron.isCauldronEmpty()) {
                 ItemStack potionItemStack = new ItemStack(Cauldron.POTION_ITEM, 1, entityBrewingCauldron.getLiquidData());
-                if (!entityplayer.inventory.addItemStackToInventory(potionItemStack)) {
+                if (!player.inventory.addItemStackToInventory(potionItemStack)) {
                     world.spawnEntity(new EntityItem(world, pos.getX() + 0.5D, pos.getY() + 1.5D, pos.getZ() + 0.5D, potionItemStack));
                 }
-                heldItemStack.stackSize--;
+                if (!player.capabilities.isCreativeMode) {
+                    heldItemStack.stackSize--;
+                }
                 if (heldItemStack.stackSize <= 0) {
-                    entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, ItemStack.EMPTY);
+                    player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
                 }
                 entityBrewingCauldron.decrementLiquidLevel();
                 world.notifyBlockUpdate(pos, state, state, 3);
+                world.playSound(null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
         } else if (entityBrewingCauldron.applyIngredient(heldItemStack)) {
             if (heldItemStack.getItem() == Cauldron.POTION_ITEM) {
-                heldItemStack.stackSize--;
-                if (heldItemStack.stackSize <= 0) {
-                    entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, ItemStack.EMPTY);
+                if (!player.capabilities.isCreativeMode) {
+                    heldItemStack.stackSize--;
                 }
-                entityplayer.inventory.addItemStackToInventory(new ItemStack(Items.GLASS_BOTTLE));
-            } else {
-                heldItemStack.stackSize--;
                 if (heldItemStack.stackSize <= 0) {
-                    entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, ItemStack.EMPTY);
+                    player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
+                }
+                player.inventory.addItemStackToInventory(new ItemStack(Items.GLASS_BOTTLE));
+            } else {
+                if (!player.capabilities.isCreativeMode) {
+                    heldItemStack.stackSize--;
+                }
+                if (heldItemStack.stackSize <= 0) {
+                    player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
                 }
             }
             world.notifyBlockUpdate(pos, state, state, 3);
@@ -121,10 +127,6 @@ public class BlockBrewingCauldron extends BlockContainer {
         return false;
     }
 
-    public EnumBlockRenderType getRenderType(IBlockState p_149645_1_) {
-        return EnumBlockRenderType.MODEL;
-    }
-
     public Item getItemDropped(IBlockState state, Random rand, int fortune) {
         return Cauldron.BREWING_CAULDRON;
     }
@@ -132,4 +134,9 @@ public class BlockBrewingCauldron extends BlockContainer {
     public ItemStack getItem(World worldIn, BlockPos pos, IBlockState state) {
         return new ItemStack(Cauldron.BREWING_CAULDRON);
     }
+
+    public EnumBlockRenderType getRenderType(IBlockState state) {
+        return EnumBlockRenderType.MODEL;
+    }
+
 }
