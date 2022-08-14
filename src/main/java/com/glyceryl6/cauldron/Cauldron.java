@@ -4,10 +4,13 @@ import com.glyceryl6.cauldron.block.BlockBrewingCauldron;
 import com.glyceryl6.cauldron.block.EntityBrewingCauldron;
 import com.glyceryl6.cauldron.item.ItemBrewingCauldronPotion;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlockSpecial;
+import net.minecraft.potion.PotionUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
@@ -46,6 +49,15 @@ public class Cauldron {
     public void init(FMLInitializationEvent event) {
         ResourceLocation resource = new ResourceLocation(MODID, "brewing_cauldron_block_entity");
         GameRegistry.registerTileEntity(EntityBrewingCauldron.class, resource);
+        this.registerItemColors();
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void registerItemColors() {
+        Minecraft minecraft = Minecraft.getMinecraft();
+        ItemColors itemColors = minecraft.getItemColors();
+        itemColors.registerItemColorHandler((stack, tintIndex) ->
+                tintIndex > 0 ? -1 : PotionUtils.getColor(stack), POTION_ITEM);
     }
 
     @SubscribeEvent
@@ -59,8 +71,10 @@ public class Cauldron {
 
     @SubscribeEvent
     public void registerItem(RegistryEvent.Register<Item> event) {
-        POTION_ITEM = (ItemBrewingCauldronPotion)(new ItemBrewingCauldronPotion())
-                .setUnlocalizedName("potion_cauldron").setRegistryName(MODID, "potion_cauldron");
+        POTION_ITEM = (ItemBrewingCauldronPotion)
+                (new ItemBrewingCauldronPotion())
+                .setUnlocalizedName("potion_cauldron")
+                .setRegistryName(MODID, "potion_cauldron");
         BREWING_CAULDRON = new ItemBlockSpecial(BLOCK_BREWING_CAULDRON);
         BREWING_CAULDRON.setCreativeTab(CreativeTabs.BREWING);
         BREWING_CAULDRON.setUnlocalizedName("brewing_cauldron");
