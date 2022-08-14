@@ -85,6 +85,7 @@ dependencies {
 jar {
     manifest {
         attributes([
+            'FMLAT': 'accesstransformer.cfg',
             "Specification-Title": "examplemod",
             "Specification-Vendor": "examplemodsareus",
             "Specification-Version": "1", // We are version 1 of ourselves
