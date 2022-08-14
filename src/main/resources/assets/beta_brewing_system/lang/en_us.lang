@@ -1,2 +1,5 @@
 item.brewing_cauldron.name=Brewing Cauldron
 tile.brewing_cauldron_block.name=Brewing Cauldron
+item.emptyPotion.name=Empty Potion
+item.potion_cauldron.name=Potion
+info.noEffect=No Effects

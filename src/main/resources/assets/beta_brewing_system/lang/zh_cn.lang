@@ -1,2 +1,5 @@
 item.brewing_cauldron.name=酿造锅
 tile.brewing_cauldron_block.name=酿造锅
+item.emptyPotion.name=空白的药水
+item.potion_cauldron.name=药水
+info.noEffect=无效果
