@@ -1,8 +1,6 @@
 package com.glyceryl6.cauldron.block;
 
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.util.DamageSource;
-
+@SuppressWarnings("unused")
 public class PotionCauldron {
 
     public static final PotionCauldron[] potionTypes = new PotionCauldron[32];
@@ -25,9 +23,9 @@ public class PotionCauldron {
     public static final PotionCauldron poison = (new PotionCauldron(19)).setPotionUsable().setPotionName("potion.poison").setIconIndex(6, 0);
 
     public final int id;
+    private boolean usable;
     private String name = "";
     private int statusIconIndex = -1;
-    private boolean usable;
 
     protected PotionCauldron(int paramInt) {
         this.id = paramInt;
@@ -43,35 +41,8 @@ public class PotionCauldron {
         return this.id;
     }
 
-    public void performEffect(EntityLiving entityliving, int paramInt) {
-        if (this.id == regeneration.id) {
-            if (entityliving.getHealth() < entityliving.getMaxHealth()) {
-                entityliving.heal(1);
-            }
-        } else if (this.id == poison.id) {
-            if (entityliving.getHealth() > 1) {
-                entityliving.attackEntityFrom(DamageSource.MAGIC, 1);
-            }
-        } else if (this.id == PotionHealthCauldron.heal.id) {
-            entityliving.heal(6 << paramInt);
-        } else if (this.id == PotionHealthCauldron.harm.id) {
-            entityliving.attackEntityFrom(DamageSource.MAGIC, 6 << paramInt);
-        }
-    }
-
     public boolean isInstant() {
         return false;
-    }
-
-    public boolean isReady(int paramInt1, int paramInt2) {
-        if (this.id == regeneration.id || this.id == poison.id) {
-            int i1 = 25 >> paramInt2;
-            if (i1 > 0) {
-                return (paramInt1 % i1 == 0);
-            }
-            return true;
-        }
-        return (this.id == hunger.id);
     }
 
     public PotionCauldron setPotionName(String paramString) {

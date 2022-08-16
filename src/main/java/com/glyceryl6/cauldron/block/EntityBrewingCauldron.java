@@ -1,17 +1,19 @@
 package com.glyceryl6.cauldron.block;
 
 import com.glyceryl6.cauldron.Cauldron;
+import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+@MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class EntityBrewingCauldron extends TileEntity {
 
@@ -41,7 +43,9 @@ public class EntityBrewingCauldron extends TileEntity {
     }
 
     public boolean applyIngredient(ItemStack itemstack) {
-        if (itemstack.getItem() == Cauldron.BREWING_CAULDRON || (itemstack.getItem() == Items.POTIONITEM && itemstack.getItemDamage() == 0 && (isCauldronDataZero() || isCauldronEmpty()))) {
+        if (itemstack.getItem() == Cauldron.POTION_ITEM ||
+                (itemstack.getItem() == Items.POTIONITEM && itemstack.getItemDamage() == 0 &&
+                        (isCauldronDataZero() || isCauldronEmpty()))) {
             if (isCauldronEmpty()) {
                 this.liquidLevel = 1;
                 this.liquidData = itemstack.getItemDamage();
@@ -62,7 +66,8 @@ public class EntityBrewingCauldron extends TileEntity {
             return false;
         }
         if (!isCauldronEmpty() && PotionHelperCauldron.isPotionIngredient(Item.getIdFromItem(itemstack.getItem()))) {
-            int i = PotionHelperCauldron.applyIngredient(this.liquidData, PotionHelperCauldron.getPotionEffect(Item.getIdFromItem(itemstack.getItem())));
+            String potionEffect = PotionHelperCauldron.getPotionEffect(Item.getIdFromItem(itemstack.getItem()));
+            int i = PotionHelperCauldron.applyIngredient(this.liquidData, potionEffect);
             if (i != this.liquidData) {
                 this.liquidData = i;
                 return true;
@@ -76,6 +81,10 @@ public class EntityBrewingCauldron extends TileEntity {
         this.liquidLevel--;
     }
 
+    public void setLiquidLevel(int liquidLevel) {
+        this.liquidLevel = liquidLevel;
+    }
+
     public int getLiquidLevel() {
         return this.liquidLevel;
     }
@@ -84,8 +93,8 @@ public class EntityBrewingCauldron extends TileEntity {
         return this.liquidData;
     }
 
-    public int o() {
-        return PotionHelperCauldron.b(this.liquidData);
+    public int getPotionColor() {
+        return PotionHelperCauldron.getPotionColor(this.liquidData);
     }
 
     @Nullable

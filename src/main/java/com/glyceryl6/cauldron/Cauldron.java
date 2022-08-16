@@ -42,20 +42,20 @@ public class Cauldron {
 
     public static Item BREWING_CAULDRON;
     public static Block POTION_FLUID_BLOCK;
-    public static BlockBrewingCauldron BLOCK_BREWING_CAULDRON;
     public static ItemBrewingCauldronPotion POTION_ITEM;
+    public static BlockBrewingCauldron BREWING_CAULDRON_BLOCK;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         POTION_FLUID.setUnlocalizedName("potion_fluid");
-        POTION_FLUID.setColor(65536);
         FluidRegistry.registerFluid(POTION_FLUID);
         MinecraftForge.EVENT_BUS.register(this);
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-        ResourceLocation resource = new ResourceLocation(MODID, "brewing_cauldron_block_entity");
+        String path = "brewing_cauldron_block_entity";
+        ResourceLocation resource = new ResourceLocation(MODID, path);
         GameRegistry.registerTileEntity(EntityBrewingCauldron.class, resource);
         this.registerColors();
     }
@@ -66,8 +66,8 @@ public class Cauldron {
         ItemColors itemColors = minecraft.getItemColors();
         itemColors.registerItemColorHandler((stack, tintIndex) -> {
             NBTTagCompound compound = stack.getTagCompound();
-            return compound != null ? compound.getInteger("Color") : -1;
-        }, POTION_ITEM);
+            return compound != null ? (tintIndex > 0 ? compound.getInteger("Color") : -1) : -1;
+            }, POTION_ITEM);
     }
 
     @SubscribeEvent
@@ -77,11 +77,11 @@ public class Cauldron {
         POTION_FLUID_BLOCK.setLightOpacity(3).disableStats();
         POTION_FLUID_BLOCK.setUnlocalizedName("potion_fluid");
         POTION_FLUID_BLOCK.setRegistryName(MODID, "potion_fluid");
-        BLOCK_BREWING_CAULDRON = new BlockBrewingCauldron();
-        BLOCK_BREWING_CAULDRON.setHardness(2.0F);
-        BLOCK_BREWING_CAULDRON.setUnlocalizedName("brewing_cauldron_block");
-        BLOCK_BREWING_CAULDRON.setRegistryName(MODID, "brewing_cauldron_block");
-        event.getRegistry().registerAll(POTION_FLUID_BLOCK, BLOCK_BREWING_CAULDRON);
+        BREWING_CAULDRON_BLOCK = new BlockBrewingCauldron();
+        BREWING_CAULDRON_BLOCK.setHardness(2.0F);
+        BREWING_CAULDRON_BLOCK.setUnlocalizedName("brewing_cauldron_block");
+        BREWING_CAULDRON_BLOCK.setRegistryName(MODID, "brewing_cauldron_block");
+        event.getRegistry().registerAll(POTION_FLUID_BLOCK, BREWING_CAULDRON_BLOCK);
     }
 
     @SubscribeEvent
@@ -90,7 +90,7 @@ public class Cauldron {
                 (new ItemBrewingCauldronPotion())
                 .setUnlocalizedName("potion_cauldron")
                 .setRegistryName(MODID, "potion_cauldron");
-        BREWING_CAULDRON = (new ItemBlockSpecial(BLOCK_BREWING_CAULDRON))
+        BREWING_CAULDRON = (new ItemBlockSpecial(BREWING_CAULDRON_BLOCK))
                 .setCreativeTab(CreativeTabs.BREWING)
                 .setUnlocalizedName("brewing_cauldron")
                 .setRegistryName(MODID, "brewing_cauldron");

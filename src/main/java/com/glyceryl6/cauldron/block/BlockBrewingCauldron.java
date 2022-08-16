@@ -25,6 +25,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
@@ -40,13 +41,14 @@ public class BlockBrewingCauldron extends BlockContainer {
 
     private static final PropertyInteger LEVEL = PropertyInteger.create("level", 0, 3);
     private static final AxisAlignedBB AABB_LEGS = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 0.3125D, 1.0D);
-    private static final AxisAlignedBB AABB_WALL_NORTH = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 0.125D);
-    private static final AxisAlignedBB AABB_WALL_SOUTH = new AxisAlignedBB(0.0D, 0.0D, 0.875D, 1.0D, 1.0D, 1.0D);
     private static final AxisAlignedBB AABB_WALL_EAST = new AxisAlignedBB(0.875D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
     private static final AxisAlignedBB AABB_WALL_WEST = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.125D, 1.0D, 1.0D);
+    private static final AxisAlignedBB AABB_WALL_SOUTH = new AxisAlignedBB(0.0D, 0.0D, 0.875D, 1.0D, 1.0D, 1.0D);
+    private static final AxisAlignedBB AABB_WALL_NORTH = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 0.125D);
 
     public BlockBrewingCauldron() {
         super(Material.IRON, MapColor.STONE);
+        this.setHarvestLevel("pickaxe", 0);
         this.setDefaultState(this.blockState.getBaseState().withProperty(LEVEL, 0));
     }
 
@@ -70,7 +72,8 @@ public class BlockBrewingCauldron extends BlockContainer {
     }
 
     @Override
-    public void addCollisionBoxToList(IBlockState state, World world, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, @Nullable Entity entity, boolean isActualState) {
+    public void addCollisionBoxToList(IBlockState state, World world, BlockPos pos, AxisAlignedBB entityBox,
+                                      List<AxisAlignedBB> collidingBoxes, @Nullable Entity entity, boolean isActualState) {
         addCollisionBoxToList(pos, entityBox, collidingBoxes, AABB_LEGS);
         addCollisionBoxToList(pos, entityBox, collidingBoxes, AABB_WALL_WEST);
         addCollisionBoxToList(pos, entityBox, collidingBoxes, AABB_WALL_NORTH);
@@ -78,8 +81,23 @@ public class BlockBrewingCauldron extends BlockContainer {
         addCollisionBoxToList(pos, entityBox, collidingBoxes, AABB_WALL_SOUTH);
     }
 
+    public void onEntityCollidedWithBlock(World world, BlockPos pos, IBlockState state, Entity entity) {
+        int i = state.getValue(LEVEL);
+        float f = (float)pos.getY() + (6.0F + (float)(3 * i)) / 16.0F;
+        if (!world.isRemote && entity.isBurning() && i > 0 && entity.getEntityBoundingBox().minY <= (double)f) {
+            entity.extinguish();
+        }
+    }
+
+    public void setWaterLevel(World world, BlockPos pos, IBlockState state, int level) {
+        IBlockState newState = state.withProperty(LEVEL, MathHelper.clamp(level, 0, 3));
+        world.setBlockState(pos, newState);
+        world.notifyBlockUpdate(pos, state, state, 3);
+    }
+
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float f1, float f2, float f3) {
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
+                                    EnumHand hand, EnumFacing facing, float f1, float f2, float f3) {
         if (world.isRemote) {
             world.notifyBlockUpdate(pos, state, state, 3);
         }
@@ -91,7 +109,8 @@ public class BlockBrewingCauldron extends BlockContainer {
         if (heldItemStack.getItem() == Items.WATER_BUCKET) {
             if (entityBrewingCauldron.fillCauldronWithWaterBucket()) {
                 if (!player.capabilities.isCreativeMode) {
-                    player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(Items.BUCKET));
+                    heldItemStack.shrink(1);
+                    player.inventory.addItemStackToInventory(new ItemStack(Items.BUCKET));
                 }
                 if (!entityBrewingCauldron.isCauldronDataZero() && cauldronMetadata != entityBrewingCauldron.getLiquidData()) {
                     world.notifyBlockUpdate(pos, state, state, 3);
@@ -108,7 +127,7 @@ public class BlockBrewingCauldron extends BlockContainer {
                     potionItemStack.setTagCompound(compoundTag);
                 }
                 compoundTag.setBoolean("Unbreakable", true);
-                compoundTag.setInteger("HideFlags",4);
+                compoundTag.setInteger("HideFlags", 4);
                 compoundTag.setInteger("Color", Math.abs(this.getPotionColor(entityBrewingCauldron)));
                 if (!player.inventory.addItemStackToInventory(potionItemStack)) {
                     world.spawnEntity(new EntityItem(world, pos.getX() + 0.5D, pos.getY() + 1.5D, pos.getZ() + 0.5D, potionItemStack));
@@ -120,8 +139,7 @@ public class BlockBrewingCauldron extends BlockContainer {
                     player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
                 }
                 entityBrewingCauldron.decrementLiquidLevel();
-                world.notifyBlockUpdate(pos, state, state, 3);
-                world.playSound(null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                world.playSound(null, pos, SoundEvents.ITEM_BUCKET_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
         } else if (entityBrewingCauldron.applyIngredient(heldItemStack)) {
             if (heldItemStack.getItem() == Cauldron.POTION_ITEM) {
@@ -154,14 +172,6 @@ public class BlockBrewingCauldron extends BlockContainer {
         return false;
     }
 
-    public void onEntityCollidedWithBlock(World world, BlockPos pos, IBlockState state, Entity entity) {
-        int i = state.getValue(LEVEL);
-        float f = (float)pos.getY() + (6.0F + (float)(3 * i)) / 16.0F;
-        if (!world.isRemote && entity.isBurning() && i > 0 && entity.getEntityBoundingBox().minY <= (double)f) {
-            entity.extinguish();
-        }
-    }
-
     public Item getItemDropped(IBlockState state, Random rand, int fortune) {
         return Cauldron.BREWING_CAULDRON;
     }
@@ -170,31 +180,32 @@ public class BlockBrewingCauldron extends BlockContainer {
         return new ItemStack(Cauldron.BREWING_CAULDRON);
     }
 
-    public EnumBlockRenderType getRenderType(IBlockState state) {
-        return EnumBlockRenderType.MODEL;
+    public int getMetaFromState(IBlockState state) {
+        return state.getValue(LEVEL);
+    }
+
+    public boolean isPassable(IBlockAccess worldIn, BlockPos pos) {
+        return true;
     }
 
     public IBlockState getStateFromMeta(int meta) {
         return this.getDefaultState().withProperty(LEVEL, meta);
     }
 
-    public int getMetaFromState(IBlockState state) {
-        return state.getValue(LEVEL);
-    }
-
-    protected BlockStateContainer createBlockState() {
+    public BlockStateContainer createBlockState() {
         return new BlockStateContainer(this, LEVEL);
     }
 
-    public boolean isPassable(IBlockAccess blockAccess, BlockPos pos) {
-        return true;
+    public EnumBlockRenderType getRenderType(IBlockState state) {
+        return EnumBlockRenderType.MODEL;
     }
 
-    public BlockFaceShape getBlockFaceShape(IBlockAccess blockAccess, IBlockState state, BlockPos pos, EnumFacing face) {
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
         if (face == EnumFacing.UP) {
             return BlockFaceShape.BOWL;
         } else {
             return face == EnumFacing.DOWN ? BlockFaceShape.UNDEFINED : BlockFaceShape.SOLID;
         }
     }
+
 }
