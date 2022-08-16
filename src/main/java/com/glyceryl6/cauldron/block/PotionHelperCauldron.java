@@ -16,21 +16,21 @@ public class PotionHelperCauldron {
     private static final HashMap<Object, Object> potionAmplifiers = new HashMap<>();
     private static final HashMap<Object, Object> potionEffects = new HashMap<>();
 
-    private static final String[] c = new String[] {
+    private static final String[] potionPrefixes = new String[] {
             "potion.effect.mundane", "potion.effect.uninteresting", "potion.effect.bland", "potion.effect.clear", "potion.effect.milky", "potion.effect.diffuse", "potion.effect.artless", "potion.effect.thin", "potion.effect.awkward", "potion.effect.flat",
             "potion.effect.bulky", "potion.effect.bungling", "potion.effect.buttered", "potion.effect.smooth", "potion.effect.suave", "potion.effect.debonair", "potion.effect.thick", "potion.effect.elegant", "potion.effect.fancy", "potion.effect.charming",
             "potion.effect.dashing", "potion.effect.refined", "potion.effect.cordial", "potion.effect.sparkling", "potion.effect.potent", "potion.effect.foul", "potion.effect.odorless", "potion.effect.rank", "potion.effect.harsh", "potion.effect.acrid",
             "potion.effect.gross", "potion.effect.stinky" };
 
-    private static boolean a(int paramInt1, int paramInt2) {
-        return ((paramInt1 & 1 << paramInt2 % 15) != 0);
+    private static boolean calculationOfBoolean(int liquidData, int paramInt2) {
+        return ((liquidData & 1 << paramInt2 % 15) != 0);
     }
 
     private static boolean b(int paramInt1, int paramInt2) {
         return ((paramInt1 & 1 << paramInt2) != 0);
     }
 
-    private static int c(int paramInt1, int paramInt2) {
+    private static int getPotionPrefix(int paramInt1, int paramInt2) {
         return b(paramInt1, paramInt2) ? 1 : 0;
     }
 
@@ -38,20 +38,20 @@ public class PotionHelperCauldron {
         return b(paramInt1, paramInt2) ? 0 : 1;
     }
 
-    public static int a(int paramInt) {
-        return a(paramInt, 14, 9, 7, 3, 2);
+    public static int getPrefixNumber(int damage) {
+        return getNumberInBinaryNumber(damage, 14, 9, 7, 3, 2);
     }
 
-    public static int b(int paramInt) {
-        int i = (a(paramInt, 2, 14, 11, 8, 5) ^ 0x3) << 3;
-        int j = (a(paramInt, 0, 12, 9, 6, 3) ^ 0x6) << 3;
-        int k = (a(paramInt, 13, 10, 4, 1, 7) ^ 0x8) << 3;
+    public static int getPotionColor(int damage) {
+        int i = (getNumberInBinaryNumber(damage, 2, 14, 11, 8, 5) ^ 0x3) << 3;
+        int j = (getNumberInBinaryNumber(damage, 0, 12, 9, 6, 3) ^ 0x6) << 3;
+        int k = (getNumberInBinaryNumber(damage, 13, 10, 4, 1, 7) ^ 0x8) << 3;
         return i << 16 | j << 8 | k;
     }
 
-    public static String c(int paramInt) {
-        int i = a(paramInt);
-        return c[i];
+    public static String getPotionPrefix(int damage) {
+        int prefixNumber = getPrefixNumber(damage);
+        return potionPrefixes[prefixNumber];
     }
 
     private static int a(boolean b1, boolean b2, boolean b3, int i1, int i2, int i3, int i4) {
@@ -67,7 +67,7 @@ public class PotionHelperCauldron {
                 i = 1;
             }
         } else {
-            i = c(i4, i2);
+            i = getPotionPrefix(i4, i2);
         }
         if (b2) {
             i *= i3;
@@ -173,18 +173,18 @@ public class PotionHelperCauldron {
         return n;
     }
 
-    public static List<?> d(int paramInt) {
+    public static List<?> getPotionEffects(int damage) {
         ArrayList<PotionEffect> localArrayList = null;
         for (PotionCauldron localPotionCauldron : PotionCauldron.potionTypes) {
             if (localPotionCauldron != null) {
-                String str1 = (String)potionRequirements.get(localPotionCauldron.getId());
-                if (str1 != null) {
-                    int k = a(str1, 0, str1.length(), paramInt);
+                String str = (String)potionRequirements.get(localPotionCauldron.getId());
+                if (str != null) {
+                    int k = a(str, 0, str.length(), damage);
                     if (k > 0) {
                         int m = 0;
                         String str2 = (String)potionAmplifiers.get(localPotionCauldron.getId());
                         if (str2 != null) {
-                            m = a(str2, 0, str2.length(), paramInt);
+                            m = a(str2, 0, str2.length(), damage);
                             if (m < 0)
                                 m = 0;
                         }
@@ -206,54 +206,56 @@ public class PotionHelperCauldron {
         return localArrayList;
     }
 
-    public static int e(int i) {
-        if ((i & 0x1) == 0) {
-            return i;
+    public static int calculationOfNetherWarts1(int liquidData) {
+        if ((liquidData & 0x1) == 0) {
+            return liquidData;
         }
         byte b = 14;
-        while ((i & 1 << b) == 0 && b >= 0) {
+        while ((liquidData & 1 << b) == 0 && b >= 0) {
             b--;
         }
-        if (b < 2 || (i & 1 << b - 1) != 0) {
-            return i;
+        if (b < 2 || (liquidData & 1 << b - 1) != 0) {
+            return liquidData;
         }
         if (b >= 0) {
-            i &= ~(1 << b);
+            liquidData &= ~(1 << b);
         }
-        i <<= 1;
+        liquidData <<= 1;
         if (b >= 0) {
-            i |= 1 << b;
-            i |= 1 << b - 1;
+            liquidData |= 1 << b;
+            liquidData |= 1 << b - 1;
         }
-        return i & 0x7FFF;
+        return liquidData & 0x7FFF;
     }
 
-    public static int f(int paramInt) {
+    public static int calculationOfNetherWarts2(int liquidData) {
         byte b = 14;
-        while ((paramInt & 1 << b) == 0 && b >= 0)
+        while ((liquidData & 1 << b) == 0 && b >= 0) {
             b--;
-        if (b >= 0)
-            paramInt &= ~(1 << b);
+        }
+        if (b >= 0) {
+            liquidData &= ~(1 << b);
+        }
         int i = 0;
-        int j = paramInt;
+        int j = liquidData;
         while (j != i) {
-            j = paramInt;
+            j = liquidData;
             i = 0;
             for (byte b1 = 0; b1 < 15; b1++) {
-                boolean bool = a(paramInt, b1);
+                boolean bool = calculationOfBoolean(liquidData, b1);
                 if (bool) {
-                    if (!a(paramInt, b1 + 1) && a(paramInt, b1 + 2)) {
+                    if (!calculationOfBoolean(liquidData, b1 + 1) && calculationOfBoolean(liquidData, b1 + 2)) {
                         bool = false;
-                    } else if (!a(paramInt, b1 - 1) && a(paramInt, b1 - 2)) {
+                    } else if (!calculationOfBoolean(liquidData, b1 - 1) && calculationOfBoolean(liquidData, b1 - 2)) {
                         bool = false;
                     }
                 } else {
-                    bool = (a(paramInt, b1 - 1) && a(paramInt, b1 + 1));
+                    bool = (calculationOfBoolean(liquidData, b1 - 1) && calculationOfBoolean(liquidData, b1 + 1));
                 }
                 if (bool)
                     i |= 1 << b1;
             }
-            paramInt = i;
+            liquidData = i;
         }
         if (b >= 0)
             i |= 1 << b;
@@ -262,9 +264,9 @@ public class PotionHelperCauldron {
 
     public static int applyNetherWart(int paramInt) {
         if ((paramInt & 0x1) != 0) {
-            paramInt = e(paramInt);
+            paramInt = calculationOfNetherWarts1(paramInt);
         }
-        return f(paramInt);
+        return calculationOfNetherWarts2(paramInt);
     }
 
     private static int a(int i1, int i2, boolean b1, boolean b2) {
@@ -321,7 +323,7 @@ public class PotionHelperCauldron {
         return paramInt & 0x7FFF;
     }
 
-    public static int a(int i1, int i2, int i3, int i4, int i5, int i6) {
+    public static int getNumberInBinaryNumber(int i1, int i2, int i3, int i4, int i5, int i6) {
         return (b(i1, i2) ? 16 : 0) | (b(i1, i3) ? 8 : 0) | (b(i1, i4) ? 4 : 0) | (b(i1, i5) ? 2 : 0) | (b(i1, i6) ? 1 : 0);
     }
 
