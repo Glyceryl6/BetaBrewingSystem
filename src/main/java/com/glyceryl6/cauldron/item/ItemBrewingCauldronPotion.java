@@ -10,8 +10,6 @@ import net.minecraft.init.Items;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ActionResult;
@@ -34,6 +32,7 @@ public class ItemBrewingCauldronPotion extends Item {
 
     public ItemBrewingCauldronPotion() {
         setMaxStackSize(1);
+        setMaxDamage(32767);
         setHasSubtypes(false);
     }
 
@@ -41,18 +40,10 @@ public class ItemBrewingCauldronPotion extends Item {
         int i = itemStack.getItemDamage();
         List list = (List)this.a.get(i);
         if (list == null) {
-            list = PotionHelperCauldron.d(i);
+            list = PotionHelperCauldron.getPotionEffects(i);
             this.a.put(i, list);
         }
         return list;
-    }
-
-    public static NBTBase getPotionColorTag(ItemStack itemStack, String key) {
-        if (itemStack.hasTagCompound() && itemStack.getTagCompound() != null) {
-            NBTTagCompound compoundTag = itemStack.getTagCompound().getCompoundTag("Color");
-            return compoundTag.getTag(key);
-        }
-        return null;
     }
 
     @ParametersAreNonnullByDefault
@@ -97,7 +88,7 @@ public class ItemBrewingCauldronPotion extends Item {
         if (itemStack.getItemDamage() == 0) {
             return new TextComponentTranslation("item.emptyPotion.name").getFormattedText();
         }
-        String string = PotionHelperCauldron.c(itemStack.getItemDamage());
+        String string = PotionHelperCauldron.getPotionPrefix(itemStack.getItemDamage());
         return new TextComponentTranslation(string).getFormattedText();
     }
 

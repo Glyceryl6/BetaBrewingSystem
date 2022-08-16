@@ -12,8 +12,7 @@ import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlockSpecial;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
@@ -66,8 +65,8 @@ public class Cauldron {
         Minecraft minecraft = Minecraft.getMinecraft();
         ItemColors itemColors = minecraft.getItemColors();
         itemColors.registerItemColorHandler((stack, tintIndex) -> {
-            NBTBase nbtBase = ItemBrewingCauldronPotion.getPotionColorTag(stack, "Color");
-            return nbtBase != null ? ((NBTTagInt)nbtBase).getInt() : -1;
+            NBTTagCompound compound = stack.getTagCompound();
+            return compound != null ? compound.getInteger("Color") : -1;
         }, POTION_ITEM);
     }
 
