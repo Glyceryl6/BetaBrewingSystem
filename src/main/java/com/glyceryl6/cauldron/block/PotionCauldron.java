@@ -1,10 +1,8 @@
 package com.glyceryl6.cauldron.block;
 
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 
-@SuppressWarnings("unused")
 public class PotionCauldron {
 
     public static final PotionCauldron[] potionTypes = new PotionCauldron[32];
@@ -13,8 +11,6 @@ public class PotionCauldron {
     public static final PotionCauldron digSpeed = (new PotionCauldron(3)).setPotionName("potion.digSpeed").setIconIndex(2, 0);
     public static final PotionCauldron digSlowdown = (new PotionCauldron(4)).setPotionUsable().setPotionName("potion.digSlowDown").setIconIndex(3, 0);
     public static final PotionCauldron damageBoost = (new PotionCauldron(5)).setPotionName("potion.damageBoost").setIconIndex(4, 0);
-    public static final PotionCauldron heal = (new PotionHealthCauldron(6)).setPotionName("potion.heal");
-    public static final PotionCauldron harm = (new PotionHealthCauldron(7)).setPotionUsable().setPotionName("potion.harm");
     public static final PotionCauldron jump = (new PotionCauldron(8)).setPotionName("potion.jump").setIconIndex(2, 1);
     public static final PotionCauldron confusion = (new PotionCauldron(9)).setPotionUsable().setPotionName("potion.confusion").setIconIndex(3, 1);
     public static final PotionCauldron regeneration = (new PotionCauldron(10)).setPotionName("potion.regeneration").setIconIndex(7, 0);
@@ -27,12 +23,10 @@ public class PotionCauldron {
     public static final PotionCauldron hunger = (new PotionCauldron(17)).setPotionUsable().setPotionName("potion.hunger").setIconIndex(1, 1);
     public static final PotionCauldron weakness = (new PotionCauldron(18)).setPotionUsable().setPotionName("potion.weakness").setIconIndex(5, 0);
     public static final PotionCauldron poison = (new PotionCauldron(19)).setPotionUsable().setPotionName("potion.poison").setIconIndex(6, 0);
+
     public final int id;
-
     private String name = "";
-
     private int statusIconIndex = -1;
-
     private boolean usable;
 
     protected PotionCauldron(int paramInt) {
@@ -58,9 +52,9 @@ public class PotionCauldron {
             if (entityliving.getHealth() > 1) {
                 entityliving.attackEntityFrom(DamageSource.MAGIC, 1);
             }
-        } else if (this.id == heal.id) {
+        } else if (this.id == PotionHealthCauldron.heal.id) {
             entityliving.heal(6 << paramInt);
-        } else if (this.id == harm.id) {
+        } else if (this.id == PotionHealthCauldron.harm.id) {
             entityliving.attackEntityFrom(DamageSource.MAGIC, 6 << paramInt);
         }
     }
@@ -104,17 +98,6 @@ public class PotionCauldron {
     protected PotionCauldron setPotionUsable() {
         this.usable = true;
         return this;
-    }
-
-    public static String getDurationString(PotionEffect effect) {
-        int i1 = effect.getDuration();
-        int i2 = i1 / 20;
-        int i3 = i2 / 60;
-        i2 %= 60;
-        if (i2 < 10) {
-            return i3 + ":0" + i2;
-        }
-        return i3 + ":" + i2;
     }
 
 }
