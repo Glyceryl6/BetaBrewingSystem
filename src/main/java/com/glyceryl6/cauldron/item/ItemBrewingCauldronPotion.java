@@ -1,20 +1,25 @@
 package com.glyceryl6.cauldron.item;
 
-import com.glyceryl6.cauldron.Cauldron;
-import com.glyceryl6.cauldron.block.PotionCauldron;
 import com.glyceryl6.cauldron.block.PotionHelperCauldron;
+import com.google.common.collect.Lists;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
+import net.minecraft.entity.ai.attributes.IAttribute;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.stats.StatList;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.Tuple;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.translation.I18n;
@@ -25,6 +30,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class ItemBrewingCauldronPotion extends Item {
 
@@ -47,27 +54,38 @@ public class ItemBrewingCauldronPotion extends Item {
     }
 
     @ParametersAreNonnullByDefault
-    public ItemStack onItemUseFinish(ItemStack itemStack, World world, EntityLivingBase entityLiving) {
+    public ItemStack onItemUseFinish(ItemStack stack, World world, EntityLivingBase entityLiving) {
+        EntityPlayer entityplayer = entityLiving instanceof EntityPlayer ? (EntityPlayer)entityLiving : null;
+        if (entityplayer == null || !entityplayer.capabilities.isCreativeMode) {
+            stack.shrink(1);
+        }
+        if (entityplayer instanceof EntityPlayerMP) {
+            CriteriaTriggers.CONSUME_ITEM.trigger((EntityPlayerMP)entityplayer, stack);
+        }
+
         if (!world.isRemote) {
-            List<?> list = a_(itemStack);
+            List<?> list = a_(stack);
             if (list != null) {
                 for (Object effect : list) {
-                    if (entityLiving instanceof EntityPlayer) {
-                        entityLiving.addPotionEffect((PotionEffect) effect);
+                    if (entityplayer != null) {
+                        entityplayer.addPotionEffect(new PotionEffect((PotionEffect) effect));
                     }
                 }
             }
         }
-        if (itemStack.stackSize <= 0) {
-            return new ItemStack(Items.GLASS_BOTTLE);
+        if (entityplayer != null) {
+            entityplayer.addStat(Objects.requireNonNull(StatList.getObjectUseStats(this)));
         }
-        if (entityLiving instanceof EntityPlayer) {
-            if (!((EntityPlayer) entityLiving).capabilities.isCreativeMode) {
-                itemStack.stackSize--;
+        if (entityplayer == null || !entityplayer.capabilities.isCreativeMode) {
+            if (stack.isEmpty()) {
+                return new ItemStack(Items.GLASS_BOTTLE);
             }
-            ((EntityPlayer) entityLiving).inventory.addItemStackToInventory(new ItemStack(Items.GLASS_BOTTLE));
+            if (entityplayer != null) {
+                entityplayer.inventory.addItemStackToInventory(new ItemStack(Items.GLASS_BOTTLE));
+            }
         }
-        return itemStack;
+
+        return stack;
     }
 
     public int getMaxItemUseDuration(ItemStack itemStack) {
@@ -94,26 +112,66 @@ public class ItemBrewingCauldronPotion extends Item {
 
     @SideOnly(Side.CLIENT)
     @SuppressWarnings("deprecation")
-    public void addInformation(ItemStack itemStack, World world, List<String> list, ITooltipFlag bool) {
-        if (itemStack.getItemDamage() == 0) return;
-        List<PotionEffect> list1 = Cauldron.POTION_ITEM.a_(itemStack);
-        if (list1 != null && !list1.isEmpty()) {
-            for (PotionEffect effect : list1) {
-                String string = I18n.translateToLocal(effect.getEffectName()).trim();
-                if (effect.getAmplifier() > 0) {
-                    string = string + " " + I18n.translateToLocal("potion.potency." + effect.getAmplifier()).trim();
+    public void addInformation(ItemStack itemStack, World world, List<String> lore, ITooltipFlag bool) {
+        List<PotionEffect> list = this.a_(itemStack);
+        List<Tuple<String, AttributeModifier>> list1 = Lists.newArrayList();
+        if (list.isEmpty()) {
+            String s = I18n.translateToLocal("effect.none").trim();
+            lore.add(TextFormatting.GRAY + s);
+        }
+        else {
+            for (PotionEffect potionEffect : list) {
+                String s1 = I18n.translateToLocal(potionEffect.getEffectName()).trim();
+                Potion potion = potionEffect.getPotion();
+                Map<IAttribute, AttributeModifier> map = potion.getAttributeModifierMap();
+                if (!map.isEmpty()) {
+                    for (Map.Entry<IAttribute, AttributeModifier> entry : map.entrySet()) {
+                        AttributeModifier attributeModifier = entry.getValue();
+                        AttributeModifier attributeModifier1 = new AttributeModifier(attributeModifier.getName(),
+                                potion.getAttributeModifierAmount(potionEffect.getAmplifier(), attributeModifier), attributeModifier.getOperation());
+                        list1.add(new Tuple<>(entry.getKey().getName(), attributeModifier1));
+                    }
                 }
-                if (effect.getDuration() > 20) {
-                    string = string + " (" + Potion.getPotionDurationString(effect, 1.0F) + ")";
+
+                if (potionEffect.getAmplifier() > 0) {
+                    s1 = s1 + " " + I18n.translateToLocal("potion.potency." + potionEffect.getAmplifier()).trim();
                 }
-                if (PotionCauldron.potionTypes[Potion.getIdFromPotion(effect.getPotion())].isUsable()) {
-                    list.add(TextFormatting.RED + I18n.translateToLocal(string));
-                    continue;
+
+                if (potionEffect.getDuration() > 20) {
+                    s1 = s1 + " (" + Potion.getPotionDurationString(potionEffect, 1.0F) + ")";
                 }
-                list.add(TextFormatting.BLUE + I18n.translateToLocal(string));
+
+                if (potion.isBadEffect()) {
+                    lore.add(TextFormatting.RED + s1);
+                } else {
+                    lore.add(TextFormatting.BLUE + s1);
+                }
             }
-        } else {
-            list.add(TextFormatting.GRAY + I18n.translateToLocal("effect.none"));
+        }
+
+        if (!list1.isEmpty()) {
+            lore.add("");
+            lore.add(TextFormatting.DARK_PURPLE + I18n.translateToLocal("potion.whenDrank"));
+            for (Tuple<String, AttributeModifier> tuple : list1) {
+                AttributeModifier attributeModifier2 = tuple.getSecond();
+                double d0 = attributeModifier2.getAmount();
+                double d1;
+
+                if (attributeModifier2.getOperation() != 1 && attributeModifier2.getOperation() != 2) {
+                    d1 = attributeModifier2.getAmount();
+                } else {
+                    d1 = attributeModifier2.getAmount() * 100.0D;
+                }
+
+                if (d0 > 0.0D) {
+                    lore.add(TextFormatting.BLUE + I18n.translateToLocalFormatted("attribute.modifier.plus." + attributeModifier2.getOperation(),
+                            ItemStack.DECIMALFORMAT.format(d1), I18n.translateToLocal("attribute.name." + tuple.getFirst())));
+                } else if (d0 < 0.0D) {
+                    d1 = d1 * -1.0D;
+                    lore.add(TextFormatting.RED + I18n.translateToLocalFormatted("attribute.modifier.take." + attributeModifier2.getOperation(),
+                            ItemStack.DECIMALFORMAT.format(d1), I18n.translateToLocal("attribute.name." + tuple.getFirst())));
+                }
+            }
         }
     }
 
