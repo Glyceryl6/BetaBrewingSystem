@@ -54,142 +54,126 @@ public class PotionHelperCauldron {
         return c[i];
     }
 
-    private static int a(boolean paramBoolean1, boolean paramBoolean2, boolean paramBoolean3, int paramInt1, int paramInt2, int paramInt3, int paramInt4) {
+    private static int a(boolean b1, boolean b2, boolean b3, int i1, int i2, int i3, int i4) {
         int i = 0;
-        if (paramBoolean1) {
-            i = d(paramInt4, paramInt2);
-        } else if (paramInt1 != -1) {
-            if (paramInt1 == 0 && h(paramInt4) == paramInt2) {
+        if (b1) {
+            i = d(i4, i2);
+        } else if (i1 != -1) {
+            if (i1 == 0 && h(i4) == i2) {
                 i = 1;
-            } else if (paramInt1 == 1 && h(paramInt4) > paramInt2) {
+            } else if (i1 == 1 && h(i4) > i2) {
                 i = 1;
-            } else if (paramInt1 == 2 && h(paramInt4) < paramInt2) {
+            } else if (i1 == 2 && h(i4) < i2) {
                 i = 1;
             }
         } else {
-            i = c(paramInt4, paramInt2);
+            i = c(i4, i2);
         }
-        if (paramBoolean2)
-            i *= paramInt3;
-        if (paramBoolean3)
+        if (b2) {
+            i *= i3;
+        }
+        if (b3) {
             i *= -1;
+        }
         return i;
     }
 
     private static int h(int paramInt) {
         int i = 0;
-        for (; paramInt > 0; i++)
+        for (; paramInt > 0; i++) {
             paramInt &= paramInt - 1;
+        }
         return i;
     }
 
     private static int a(String paramString, int paramInt1, int paramInt2, int paramInt3) {
-        if (paramInt1 >= paramString.length() || paramInt2 < 0 || paramInt1 >= paramInt2)
-            return 0;
+        if (paramInt1 >= paramString.length() || paramInt2 < 0 || paramInt1 >= paramInt2) return 0;
         int i = paramString.indexOf('|', paramInt1);
         if (i >= 0 && i < paramInt2) {
-            int i6 = a(paramString, paramInt1, i - 1, paramInt3);
-            if (i6 > 0)
-                return i6;
-            int i7 = a(paramString, i + 1, paramInt2, paramInt3);
-            if (i7 > 0)
-                return i7;
-            return 0;
+            int i2 = a(paramString, paramInt1, i - 1, paramInt3);
+            if (i2 > 0) {
+                return i2;
+            }
+            int i3 = a(paramString, i + 1, paramInt2, paramInt3);
+            return Math.max(i3, 0);
         }
         int j = paramString.indexOf('&', paramInt1);
         if (j >= 0 && j < paramInt2) {
-            int i6 = a(paramString, paramInt1, j - 1, paramInt3);
-            if (i6 <= 0)
+            int i2 = a(paramString, paramInt1, j - 1, paramInt3);
+            if (i2 <= 0) {
                 return 0;
-            int i7 = a(paramString, j + 1, paramInt2, paramInt3);
-            if (i7 <= 0)
+            }
+            int i3 = a(paramString, j + 1, paramInt2, paramInt3);
+            if (i3 <= 0) {
                 return 0;
-            if (i6 > i7)
-                return i6;
-            return i7;
+            }
+            return Math.max(i2, i3);
         }
-        int k = 0;
-        boolean m = false;
-        int n = 0;
+        boolean bool1 = false;
         boolean bool2 = false;
         boolean bool3 = false;
-        int i1 = -1;
-        int i2 = 0;
-        int i3 = 0;
-        int i4 = 0;
-        boolean bool1 = false;
-        for (int i5 = paramInt1; i5 < paramInt2; i5++) {
-            int i6 = paramString.charAt(i5);
-            if (i6 >= 48 && i6 <= 57) {
-                if (k != 0) {
-                    i3 = i6 - 48;
-                    m = true;
+        boolean bool4 = false;
+        boolean bool5 = false;
+        byte b = -1;
+        int k = 0;
+        int m = 0;
+        int n = 0;
+        for (int i1 = paramInt1; i1 < paramInt2; i1++) {
+            char c = paramString.charAt(i1);
+            if (c >= '0' && c <= '9') {
+                if (bool1) {
+                    m = c - 48;
+                    bool2 = true;
                 } else {
-                    i2 *= 10;
-                    i2 += i6 - 48;
-                    n = 1;
+                    k *= 10;
+                    k += c - 48;
+                    bool3 = true;
                 }
-            } else if (i6 == 42) {
-                k = 1;
-            } else if (i6 == 33) {
-                if (n != 0) {
-                    i4 += a(bool2, m, bool3, i1, i2, i3, paramInt3);
-                    n = 0;
-                    bool1 = false;
-                    k = 0;
-                    bool3 = false;
-                    bool2 = false;
-                    i2 = i3 = 0;
-                    i1 = -1;
+            } else if (c == '*') {
+                bool1 = true;
+            } else if (c == '!') {
+                if (bool3) {
+                    n += a(bool4, bool2, bool5, b, k, m, paramInt3);
+                    bool3 = bool2 = bool1 = bool5 = false;
+                    k = m = 0;
+                    b = -1;
                 }
-                bool2 = true;
-            } else if (i6 == 45) {
-                if (n != 0) {
-                    i4 += a(bool2, bool1, bool3, i1, i2, i3, paramInt3);
-                    n = 0;
-                    bool1 = false;
-                    k = 0;
-                    bool3 = false;
-                    bool2 = false;
-                    i2 = i3 = 0;
-                    i1 = -1;
+                bool4 = true;
+            } else if (c == '-') {
+                if (bool3) {
+                    n += a(bool4, bool2, bool5, b, k, m, paramInt3);
+                    bool3 = bool2 = bool1 = bool4 = false;
+                    k = m = 0;
+                    b = -1;
                 }
-                bool3 = true;
-            } else if (i6 == 61 || i6 == 60 || i6 == 62) {
-                if (n != 0) {
-                    i4 += a(bool2, bool1, bool3, i1, i2, i3, paramInt3);
-                    n = 0;
-                    bool1 = false;
-                    k = 0;
-                    bool3 = false;
-                    bool2 = false;
-                    i2 = i3 = 0;
-                    i1 = -1;
+                bool5 = true;
+            } else if (c == '=' || c == '<' || c == '>') {
+                if (bool3) {
+                    n += a(bool4, bool2, bool5, b, k, m, paramInt3);
+                    bool3 = bool2 = bool1 = bool5 = bool4 = false;
+                    k = m = 0;
                 }
-                if (i6 == 61) {
-                    i1 = 0;
-                } else if (i6 == 60) {
-                    i1 = 2;
-                } else if (i6 == 62) {
-                    i1 = 1;
+                if (c == '=') {
+                    b = 0;
+                } else if (c == '<') {
+                    b = 2;
+                } else {
+                    b = 1;
                 }
-            } else if (i6 == 43 && n != 0) {
-                i4 += a(bool2, bool1, bool3, i1, i2, i3, paramInt3);
-                n = 0;
-                bool1 = false;
-                k = 0;
-                bool3 = false;
-                bool2 = false;
-                i2 = i3 = 0;
-                i1 = -1;
+            } else if (c == '+' && bool3) {
+                n += a(bool4, bool2, bool5, b, k, m, paramInt3);
+                bool3 = bool2 = bool1 = bool5 = bool4 = false;
+                k = m = 0;
+                b = -1;
             }
         }
-        if (n != 0)
-            i4 += a(bool2, bool1, bool3, i1, i2, i3, paramInt3);
-        return i4;
+        if (bool3) {
+            n += a(bool4, bool2, bool5, b, k, m, paramInt3);
+        }
+        return n;
     }
 
-    public static List d(int paramInt) {
+    public static List<?> d(int paramInt) {
         ArrayList<PotionEffect> localArrayList = null;
         for (PotionCauldron localPotionCauldron : PotionCauldron.potionTypes) {
             if (localPotionCauldron != null) {
@@ -212,7 +196,7 @@ public class PotionHelperCauldron {
                                 k >>= 1;
                         }
                         if (localArrayList == null) {
-                            localArrayList = new ArrayList();
+                            localArrayList = new ArrayList<>();
                         }
                         localArrayList.add(new PotionEffect(Objects.requireNonNull(Potion.getPotionById(localPotionCauldron.getId())), k, m));
                     }
@@ -222,121 +206,123 @@ public class PotionHelperCauldron {
         return localArrayList;
     }
 
-    public static int e(int paramInt) {
-        if ((paramInt & 0x1) == 0)
-            return paramInt;
-        int i = 14;
-        while ((paramInt & 1 << i) == 0 && i >= 0)
-            i--;
-        if (i < 2 || (paramInt & 1 << i - 1) != 0)
-            return paramInt;
-        if (i >= 0) {
-            paramInt &= ~(1 << i);
+    public static int e(int i) {
+        if ((i & 0x1) == 0) {
+            return i;
         }
-        paramInt <<= 1;
-        if (i >= 0) {
-            paramInt |= 1 << i;
-            paramInt |= 1 << i - 1;
+        byte b = 14;
+        while ((i & 1 << b) == 0 && b >= 0) {
+            b--;
         }
-        return paramInt & 0x7FFF;
+        if (b < 2 || (i & 1 << b - 1) != 0) {
+            return i;
+        }
+        if (b >= 0) {
+            i &= ~(1 << b);
+        }
+        i <<= 1;
+        if (b >= 0) {
+            i |= 1 << b;
+            i |= 1 << b - 1;
+        }
+        return i & 0x7FFF;
     }
 
     public static int f(int paramInt) {
-        int i = 14;
-        while ((paramInt & 1 << i) == 0 && i >= 0)
-            i--;
-        if (i >= 0)
-            paramInt &= ~(1 << i);
-        int j = 0;
-        int k = paramInt;
-        while (k != j) {
-            k = paramInt;
-            j = 0;
-            for (int m = 0; m < 15; m++) {
-                boolean bool = a(paramInt, m);
+        byte b = 14;
+        while ((paramInt & 1 << b) == 0 && b >= 0)
+            b--;
+        if (b >= 0)
+            paramInt &= ~(1 << b);
+        int i = 0;
+        int j = paramInt;
+        while (j != i) {
+            j = paramInt;
+            i = 0;
+            for (byte b1 = 0; b1 < 15; b1++) {
+                boolean bool = a(paramInt, b1);
                 if (bool) {
-                    if (!a(paramInt, m + 1) && a(paramInt, m + 2)) {
+                    if (!a(paramInt, b1 + 1) && a(paramInt, b1 + 2)) {
                         bool = false;
-                    } else if (!a(paramInt, m - 1) && a(paramInt, m - 2)) {
+                    } else if (!a(paramInt, b1 - 1) && a(paramInt, b1 - 2)) {
                         bool = false;
                     }
                 } else {
-                    bool = (a(paramInt, m - 1) && a(paramInt, m + 1));
+                    bool = (a(paramInt, b1 - 1) && a(paramInt, b1 + 1));
                 }
                 if (bool)
-                    j |= 1 << m;
+                    i |= 1 << b1;
             }
-            paramInt = j;
+            paramInt = i;
         }
-        if (i >= 0)
-            j |= 1 << i;
-        return j & 0x7FFF;
+        if (b >= 0)
+            i |= 1 << b;
+        return i & 0x7FFF;
     }
 
     public static int applyNetherWart(int paramInt) {
-        if ((paramInt & 0x1) != 0)
+        if ((paramInt & 0x1) != 0) {
             paramInt = e(paramInt);
+        }
         return f(paramInt);
     }
 
-    private static int a(int paramInt1, int paramInt2, boolean paramBoolean1, boolean paramBoolean2) {
-        if (paramBoolean1) {
-            paramInt1 &= ~(1 << paramInt2);
-        } else if (paramBoolean2) {
-            if ((paramInt1 & 1 << paramInt2) != 0) {
-                paramInt1 &= ~(1 << paramInt2);
+    private static int a(int i1, int i2, boolean b1, boolean b2) {
+        if (b1) {
+            i1 &= ~(1 << i2);
+        } else if (b2) {
+            if ((i1 & 1 << i2) != 0) {
+                i1 &= ~(1 << i2);
             } else {
-                paramInt1 |= 1 << paramInt2;
+                i1 |= 1 << i2;
             }
         } else {
-            paramInt1 |= 1 << paramInt2;
+            i1 |= 1 << i2;
         }
-        return paramInt1;
+        return i1;
     }
 
     public static int applyIngredient(int paramInt, String paramString) {
-        int i = 0;
-        int j = paramString.length();
-        int k = 0;
+        byte b1 = 0;
+        int i = paramString.length();
         boolean bool1 = false;
         boolean bool2 = false;
-        int m = 0;
-        for (int n = i; n < j; n++) {
-            int i1 = paramString.charAt(n);
-            if (i1 >= 48 && i1 <= 57) {
-                m *= 10;
-                m += i1 - 48;
-                k = 1;
-            } else if (i1 == 33) {
-                if (k != 0) {
-                    paramInt = a(paramInt, m, bool2, bool1);
-                    k = 0;
-                    bool2 = bool1 = false;
-                    m = 0;
-                }
+        boolean bool3 = false;
+        int j = 0;
+        for (byte b2 = b1; b2 < i; b2++) {
+            char c = paramString.charAt(b2);
+            if (c >= '0' && c <= '9') {
+                j *= 10;
+                j += c - 48;
                 bool1 = true;
-            } else if (i1 == 45) {
-                if (k != 0) {
-                    paramInt = a(paramInt, m, bool2, bool1);
-                    k = 0;
-                    bool2 = bool1 = false;
-                    m = 0;
+            } else if (c == '!') {
+                if (bool1) {
+                    paramInt = a(paramInt, j, bool3, bool2);
+                    bool1 = bool3 = false;
+                    j = 0;
                 }
                 bool2 = true;
-            } else if (i1 == 43 && k != 0) {
-                paramInt = a(paramInt, m, bool2, bool1);
-                k = 0;
-                bool2 = bool1 = false;
-                m = 0;
+            } else if (c == '-') {
+                if (bool1) {
+                    paramInt = a(paramInt, j, bool3, bool2);
+                    bool1 = bool2 = false;
+                    j = 0;
+                }
+                bool3 = true;
+            } else if (c == '+' && bool1) {
+                paramInt = a(paramInt, j, bool3, bool2);
+                bool1 = bool3 = bool2 = false;
+                j = 0;
             }
         }
-        if (k != 0)
-            paramInt = a(paramInt, m, bool2, bool1);
+        if (bool1) {
+            paramInt = a(paramInt, j, bool3, bool2);
+        }
         return paramInt & 0x7FFF;
     }
 
-    public static int a(int paramInt1, int paramInt2, int paramInt3, int paramInt4, int paramInt5, int paramInt6) {
-        return (b(paramInt1, paramInt2) ? 16 : 0) | (b(paramInt1, paramInt3) ? 8 : 0) | (b(paramInt1, paramInt4) ? 4 : 0) | (b(paramInt1, paramInt5) ? 2 : 0) | (b(paramInt1, paramInt6) ? 1 : 0);
+    public static int a(int i1, int i2, int i3, int i4, int i5, int i6) {
+        return (b(i1, i2) ? 16 : 0) | (b(i1, i3) ? 8 : 0) | (b(i1, i4) ? 4 : 0) | (b(i1, i5) ? 2 : 0) | (b(i1, i6) ? 1 : 0);
     }
 
     public static boolean isPotionIngredient(int itemID) {
@@ -353,8 +339,8 @@ public class PotionHelperCauldron {
         potionRequirements.put(PotionCauldron.digSpeed.getId(), "2 & 12+2+6-1-7 & <8");
         potionRequirements.put(PotionCauldron.digSlowdown.getId(), "!2 & !1*2-9 & 14-5");
         potionRequirements.put(PotionCauldron.damageBoost.getId(), "9 & 3 & 9+4+5 & <11");
-        potionRequirements.put(PotionCauldron.heal.getId(), "11 & <6");
-        potionRequirements.put(PotionCauldron.harm.getId(), "!11 & 1 & 10 & !7");
+        potionRequirements.put(PotionHealthCauldron.heal.getId(), "11 & <6");
+        potionRequirements.put(PotionHealthCauldron.harm.getId(), "!11 & 1 & 10 & !7");
         potionRequirements.put(PotionCauldron.jump.getId(), "8 & 2+0 & <5");
         potionRequirements.put(PotionCauldron.confusion.getId(), "8*2-!7+4-11 & !2 | 13 & 11 & 2*3-1-5");
         potionRequirements.put(PotionCauldron.regeneration.getId(), "!14 & 13*3-!0-!5-8");
@@ -370,8 +356,8 @@ public class PotionHelperCauldron {
         potionAmplifiers.put(PotionCauldron.moveSpeed.getId(), "7+!3-!1");
         potionAmplifiers.put(PotionCauldron.digSpeed.getId(), "1+0-!11");
         potionAmplifiers.put(PotionCauldron.damageBoost.getId(), "2+7-!12");
-        potionAmplifiers.put(PotionCauldron.heal.getId(), "11+!0-!1-!14");
-        potionAmplifiers.put(PotionCauldron.harm.getId(), "!11-!14+!0-!1");
+        potionAmplifiers.put(PotionHealthCauldron.heal.getId(), "11+!0-!1-!14");
+        potionAmplifiers.put(PotionHealthCauldron.harm.getId(), "!11-!14+!0-!1");
         potionAmplifiers.put(PotionCauldron.resistance.getId(), "12-!2");
         potionAmplifiers.put(PotionCauldron.poison.getId(), "14>5");
         potionEffects.put(Item.getIdFromItem(Items.GHAST_TEAR), "+11");
