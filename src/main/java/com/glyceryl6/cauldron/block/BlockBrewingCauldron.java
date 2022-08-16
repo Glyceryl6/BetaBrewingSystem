@@ -2,6 +2,7 @@ package com.glyceryl6.cauldron.block;
 
 import com.glyceryl6.cauldron.Cauldron;
 import com.glyceryl6.cauldron.util.ColorUtil;
+import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
@@ -24,7 +25,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
@@ -33,6 +33,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.Random;
 
+@MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 @SuppressWarnings("deprecation")
 public class BlockBrewingCauldron extends BlockContainer {
@@ -50,11 +51,11 @@ public class BlockBrewingCauldron extends BlockContainer {
     }
 
     public int getPotionColor(EntityBrewingCauldron cauldron) {
-        int i5 = cauldron.o();
-        float f2 = (i5 >> 16 & 0xFF) / 255.0F;
-        float f3 = (i5 >> 8 & 0xFF) / 255.0F;
-        float f4 = (i5 & 0xFF) / 255.0F;
-        return ColorUtil.setColorOpaque_F(f2, f3, f4);
+        int potionColor = cauldron.getPotionColor();
+        float f1 = (potionColor >> 16 & 0xFF) / 255.0F;
+        float f2 = (potionColor >> 8 & 0xFF) / 255.0F;
+        float f3 = (potionColor & 0xFF) / 255.0F;
+        return ColorUtil.setColorOpaque_F(f1, f2, f3);
     }
 
     @Nullable
@@ -68,6 +69,7 @@ public class BlockBrewingCauldron extends BlockContainer {
         return true;
     }
 
+    @Override
     public void addCollisionBoxToList(IBlockState state, World world, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, @Nullable Entity entity, boolean isActualState) {
         addCollisionBoxToList(pos, entityBox, collidingBoxes, AABB_LEGS);
         addCollisionBoxToList(pos, entityBox, collidingBoxes, AABB_WALL_WEST);
@@ -76,6 +78,7 @@ public class BlockBrewingCauldron extends BlockContainer {
         addCollisionBoxToList(pos, entityBox, collidingBoxes, AABB_WALL_SOUTH);
     }
 
+    @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float f1, float f2, float f3) {
         if (world.isRemote) {
             world.notifyBlockUpdate(pos, state, state, 3);
@@ -104,6 +107,8 @@ public class BlockBrewingCauldron extends BlockContainer {
                 if (!potionItemStack.hasTagCompound()) {
                     potionItemStack.setTagCompound(compoundTag);
                 }
+                compoundTag.setBoolean("Unbreakable", true);
+                compoundTag.setInteger("HideFlags",4);
                 compoundTag.setInteger("Color", Math.abs(this.getPotionColor(entityBrewingCauldron)));
                 if (!player.inventory.addItemStackToInventory(potionItemStack)) {
                     world.spawnEntity(new EntityItem(world, pos.getX() + 0.5D, pos.getY() + 1.5D, pos.getZ() + 0.5D, potionItemStack));
@@ -155,11 +160,6 @@ public class BlockBrewingCauldron extends BlockContainer {
         if (!world.isRemote && entity.isBurning() && i > 0 && entity.getEntityBoundingBox().minY <= (double)f) {
             entity.extinguish();
         }
-    }
-
-    public void setWaterLevel(World world, BlockPos pos, IBlockState state, int level) {
-        world.setBlockState(pos, state.withProperty(LEVEL, MathHelper.clamp(level, 0, 3)), 3);
-        world.updateComparatorOutputLevel(pos, this);
     }
 
     public Item getItemDropped(IBlockState state, Random rand, int fortune) {
