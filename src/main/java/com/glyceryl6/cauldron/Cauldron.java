@@ -2,27 +2,31 @@ package com.glyceryl6.cauldron;
 
 import com.glyceryl6.cauldron.block.BlockBrewingCauldron;
 import com.glyceryl6.cauldron.block.EntityBrewingCauldron;
+import com.glyceryl6.cauldron.block.ModFluidClassic;
 import com.glyceryl6.cauldron.item.ItemBrewingCauldronPotion;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlockSpecial;
-import net.minecraft.potion.PotionUtils;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -33,15 +37,20 @@ public class Cauldron {
     public static final String NAME = "Beta Brewing System";
     public static final String VERSION = "1.1.0";
 
-    @ObjectHolder("beta_brewing_system:brewing_cauldron")
+    public static final Fluid POTION_FLUID = new Fluid("potion_fluid",
+            new ResourceLocation(MODID, "potion_fluid_still"),
+            new ResourceLocation(MODID, "potion_fluid_flow"));
+
     public static Item BREWING_CAULDRON;
-    @ObjectHolder("beta_brewing_system:brewing_cauldron_block")
+    public static Block POTION_FLUID_BLOCK;
     public static BlockBrewingCauldron BLOCK_BREWING_CAULDRON;
-    @ObjectHolder("beta_brewing_system:potion_cauldron")
     public static ItemBrewingCauldronPotion POTION_ITEM;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        POTION_FLUID.setUnlocalizedName("potion_fluid");
+        POTION_FLUID.setColor(65536);
+        FluidRegistry.registerFluid(POTION_FLUID);
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -49,24 +58,31 @@ public class Cauldron {
     public void init(FMLInitializationEvent event) {
         ResourceLocation resource = new ResourceLocation(MODID, "brewing_cauldron_block_entity");
         GameRegistry.registerTileEntity(EntityBrewingCauldron.class, resource);
-        this.registerItemColors();
+        this.registerColors();
     }
 
     @SideOnly(Side.CLIENT)
-    public void registerItemColors() {
+    public void registerColors() {
         Minecraft minecraft = Minecraft.getMinecraft();
         ItemColors itemColors = minecraft.getItemColors();
-        itemColors.registerItemColorHandler((stack, tintIndex) ->
-                tintIndex > 0 ? -1 : PotionUtils.getColor(stack), POTION_ITEM);
+        itemColors.registerItemColorHandler((stack, tintIndex) -> {
+            NBTBase nbtBase = ItemBrewingCauldronPotion.getPotionColorTag(stack, "Color");
+            return nbtBase != null ? ((NBTTagInt)nbtBase).getInt() : -1;
+        }, POTION_ITEM);
     }
 
     @SubscribeEvent
     public void registerBlock(RegistryEvent.Register<Block> event) {
+        POTION_FLUID_BLOCK = new ModFluidClassic(POTION_FLUID, Material.WATER);
+        POTION_FLUID_BLOCK.setHardness(100.0F);
+        POTION_FLUID_BLOCK.setLightOpacity(3).disableStats();
+        POTION_FLUID_BLOCK.setUnlocalizedName("potion_fluid");
+        POTION_FLUID_BLOCK.setRegistryName(MODID, "potion_fluid");
         BLOCK_BREWING_CAULDRON = new BlockBrewingCauldron();
         BLOCK_BREWING_CAULDRON.setHardness(2.0F);
         BLOCK_BREWING_CAULDRON.setUnlocalizedName("brewing_cauldron_block");
         BLOCK_BREWING_CAULDRON.setRegistryName(MODID, "brewing_cauldron_block");
-        event.getRegistry().register(BLOCK_BREWING_CAULDRON);
+        event.getRegistry().registerAll(POTION_FLUID_BLOCK, BLOCK_BREWING_CAULDRON);
     }
 
     @SubscribeEvent
@@ -75,10 +91,10 @@ public class Cauldron {
                 (new ItemBrewingCauldronPotion())
                 .setUnlocalizedName("potion_cauldron")
                 .setRegistryName(MODID, "potion_cauldron");
-        BREWING_CAULDRON = new ItemBlockSpecial(BLOCK_BREWING_CAULDRON);
-        BREWING_CAULDRON.setCreativeTab(CreativeTabs.BREWING);
-        BREWING_CAULDRON.setUnlocalizedName("brewing_cauldron");
-        BREWING_CAULDRON.setRegistryName(MODID, "brewing_cauldron");
+        BREWING_CAULDRON = (new ItemBlockSpecial(BLOCK_BREWING_CAULDRON))
+                .setCreativeTab(CreativeTabs.BREWING)
+                .setUnlocalizedName("brewing_cauldron")
+                .setRegistryName(MODID, "brewing_cauldron");
         event.getRegistry().registerAll(BREWING_CAULDRON, POTION_ITEM);
     }
 
