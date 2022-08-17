@@ -1,7 +1,6 @@
 package com.glyceryl6.cauldron.block;
 
 import com.glyceryl6.cauldron.Cauldron;
-import com.glyceryl6.cauldron.util.ColorUtil;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.MapColor;
@@ -52,14 +51,6 @@ public class BlockBrewingCauldron extends BlockContainer {
         this.setDefaultState(this.blockState.getBaseState().withProperty(LEVEL, 0));
     }
 
-    public int getPotionColor(EntityBrewingCauldron cauldron) {
-        int potionColor = cauldron.getPotionColor();
-        float f1 = (potionColor >> 16 & 0xFF) / 255.0F;
-        float f2 = (potionColor >> 8 & 0xFF) / 255.0F;
-        float f3 = (potionColor & 0xFF) / 255.0F;
-        return ColorUtil.setColorOpaque_F(f1, f2, f3);
-    }
-
     @Nullable
     @Override
     public TileEntity createNewTileEntity(World world, int meta) {
@@ -96,8 +87,7 @@ public class BlockBrewingCauldron extends BlockContainer {
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
-                                    EnumHand hand, EnumFacing facing, float f1, float f2, float f3) {
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float f1, float f2, float f3) {
         if (world.isRemote) {
             world.notifyBlockUpdate(pos, state, state, 3);
         }
@@ -107,6 +97,7 @@ public class BlockBrewingCauldron extends BlockContainer {
         EntityBrewingCauldron entityBrewingCauldron = (EntityBrewingCauldron)tileEntity;
         int cauldronMetadata = entityBrewingCauldron.getLiquidData();
         if (heldItemStack.getItem() == Items.WATER_BUCKET) {
+            setWaterLevel(world, pos, state, 3);
             if (entityBrewingCauldron.fillCauldronWithWaterBucket()) {
                 if (!player.capabilities.isCreativeMode) {
                     heldItemStack.shrink(1);
@@ -128,7 +119,7 @@ public class BlockBrewingCauldron extends BlockContainer {
                 }
                 compoundTag.setBoolean("Unbreakable", true);
                 compoundTag.setInteger("HideFlags", 4);
-                compoundTag.setInteger("Color", Math.abs(this.getPotionColor(entityBrewingCauldron)));
+                compoundTag.setInteger("Color", Math.abs(entityBrewingCauldron.getLiquidColor()));
                 if (!player.inventory.addItemStackToInventory(potionItemStack)) {
                     world.spawnEntity(new EntityItem(world, pos.getX() + 0.5D, pos.getY() + 1.5D, pos.getZ() + 0.5D, potionItemStack));
                 }
@@ -139,6 +130,7 @@ public class BlockBrewingCauldron extends BlockContainer {
                     player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
                 }
                 entityBrewingCauldron.decrementLiquidLevel();
+                setWaterLevel(world, pos, state, state.getValue(LEVEL) - 1);
                 world.playSound(null, pos, SoundEvents.ITEM_BUCKET_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
         } else if (entityBrewingCauldron.applyIngredient(heldItemStack)) {
@@ -158,6 +150,7 @@ public class BlockBrewingCauldron extends BlockContainer {
                     player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
                 }
             }
+            world.playSound(null, pos, SoundEvents.ITEM_BUCKET_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
             world.notifyBlockUpdate(pos, state, state, 3);
             return true;
         }
