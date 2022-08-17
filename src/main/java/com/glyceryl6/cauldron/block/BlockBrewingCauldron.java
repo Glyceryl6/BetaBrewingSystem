@@ -87,10 +87,9 @@ public class BlockBrewingCauldron extends BlockContainer {
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float f1, float f2, float f3) {
-        if (world.isRemote) {
-            world.notifyBlockUpdate(pos, state, state, 3);
-        }
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
+                                    EnumHand hand, EnumFacing facing, float f1, float f2, float f3) {
+        if (world.isRemote) world.notifyBlockUpdate(pos, state, state, 3);
         ItemStack heldItemStack = player.inventory.getCurrentItem();
         TileEntity tileEntity = world.getTileEntity(pos);
         if (!(tileEntity instanceof EntityBrewingCauldron)) return true;
@@ -131,7 +130,7 @@ public class BlockBrewingCauldron extends BlockContainer {
                 }
                 entityBrewingCauldron.decrementLiquidLevel();
                 setWaterLevel(world, pos, state, state.getValue(LEVEL) - 1);
-                world.playSound(null, pos, SoundEvents.ITEM_BUCKET_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                world.playSound(null, pos, SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
         } else if (entityBrewingCauldron.applyIngredient(heldItemStack)) {
             if (heldItemStack.getItem() == Cauldron.POTION_ITEM) {
