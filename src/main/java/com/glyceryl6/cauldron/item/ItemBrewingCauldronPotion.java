@@ -115,11 +115,7 @@ public class ItemBrewingCauldronPotion extends Item {
     public void addInformation(ItemStack itemStack, World world, List<String> lore, ITooltipFlag bool) {
         List<PotionEffect> list = this.a_(itemStack);
         List<Tuple<String, AttributeModifier>> list1 = Lists.newArrayList();
-        if (list.isEmpty()) {
-            String s = I18n.translateToLocal("effect.none").trim();
-            lore.add(TextFormatting.GRAY + s);
-        }
-        else {
+        if (list != null && !list.isEmpty()) {
             for (PotionEffect potionEffect : list) {
                 String s1 = I18n.translateToLocal(potionEffect.getEffectName()).trim();
                 Potion potion = potionEffect.getPotion();
