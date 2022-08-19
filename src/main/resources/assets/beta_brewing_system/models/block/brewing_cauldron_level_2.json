@@ -6,7 +6,7 @@
     "bottom": "beta_brewing_system:blocks/brewing_cauldron_bottom",
     "side": "beta_brewing_system:blocks/brewing_cauldron_side",
     "inside": "beta_brewing_system:blocks/brewing_cauldron_inner",
-    "water": "beta_brewing_system:blocks/potion_fluid_still"
+    "water": "blocks/water_still"
   },
   "elements": [
     {   "from": [ 0, 3, 0 ],

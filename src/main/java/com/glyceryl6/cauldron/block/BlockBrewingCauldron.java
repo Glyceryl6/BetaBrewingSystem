@@ -5,6 +5,7 @@ import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
@@ -38,6 +39,7 @@ import java.util.Random;
 @SuppressWarnings("deprecation")
 public class BlockBrewingCauldron extends BlockContainer {
 
+    private static final PropertyBool POTION = PropertyBool.create("potion");
     private static final PropertyInteger LEVEL = PropertyInteger.create("level", 0, 3);
     private static final AxisAlignedBB AABB_LEGS = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 0.3125D, 1.0D);
     private static final AxisAlignedBB AABB_WALL_EAST = new AxisAlignedBB(0.875D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
@@ -48,7 +50,7 @@ public class BlockBrewingCauldron extends BlockContainer {
     public BlockBrewingCauldron() {
         super(Material.IRON, MapColor.STONE);
         this.setHarvestLevel("pickaxe", 0);
-        this.setDefaultState(this.blockState.getBaseState().withProperty(LEVEL, 0));
+        this.setDefaultState(this.blockState.getBaseState().withProperty(LEVEL, 0).withProperty(POTION, false));
     }
 
     @Nullable
@@ -80,8 +82,8 @@ public class BlockBrewingCauldron extends BlockContainer {
         }
     }
 
-    public void setWaterLevel(World world, BlockPos pos, IBlockState state, int level) {
-        IBlockState newState = state.withProperty(LEVEL, MathHelper.clamp(level, 0, 3));
+    public void updateBlockState(World world, BlockPos pos, IBlockState state, int level, boolean hasPotion) {
+        IBlockState newState = state.withProperty(LEVEL, MathHelper.clamp(level, 0, 3)).withProperty(POTION, hasPotion);
         world.setBlockState(pos, newState);
         world.notifyBlockUpdate(pos, state, state, 3);
     }
@@ -96,7 +98,7 @@ public class BlockBrewingCauldron extends BlockContainer {
         EntityBrewingCauldron entityBrewingCauldron = (EntityBrewingCauldron)tileEntity;
         int cauldronMetadata = entityBrewingCauldron.getLiquidData();
         if (heldItemStack.getItem() == Items.WATER_BUCKET) {
-            setWaterLevel(world, pos, state, 3);
+            //setWaterLevel(world, pos, state, 3);
             if (entityBrewingCauldron.fillCauldronWithWaterBucket()) {
                 if (!player.capabilities.isCreativeMode) {
                     heldItemStack.shrink(1);
@@ -105,6 +107,7 @@ public class BlockBrewingCauldron extends BlockContainer {
                 if (!entityBrewingCauldron.isCauldronDataZero() && cauldronMetadata != entityBrewingCauldron.getLiquidData()) {
                     world.notifyBlockUpdate(pos, state, state, 3);
                 }
+                this.updateBlockState(world, pos, state, 3, entityBrewingCauldron.getLiquidData() != 0);
                 world.playSound(null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
             return true;
@@ -135,7 +138,7 @@ public class BlockBrewingCauldron extends BlockContainer {
                 if (!player.capabilities.isCreativeMode) {
                     heldItemStack.stackSize--;
                     entityBrewingCauldron.decrementLiquidLevel();
-                    setWaterLevel(world, pos, state, state.getValue(LEVEL) - 1);
+                    this.updateBlockState(world, pos, state, state.getValue(LEVEL) - 1, entityBrewingCauldron.getLiquidData() != 0);
                 }
                 if (heldItemStack.stackSize <= 0) {
                     player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
@@ -143,6 +146,7 @@ public class BlockBrewingCauldron extends BlockContainer {
                 world.playSound(null, pos, SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
         } else if (entityBrewingCauldron.applyIngredient(heldItemStack)) {
+            this.updateBlockState(world, pos, state, state.getValue(LEVEL), true);
             if (heldItemStack.getItem() == Cauldron.POTION_ITEM) {
                 if (!player.capabilities.isCreativeMode) {
                     heldItemStack.stackSize--;
@@ -191,11 +195,11 @@ public class BlockBrewingCauldron extends BlockContainer {
     }
 
     public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState().withProperty(LEVEL, meta);
+        return this.getDefaultState().withProperty(LEVEL, meta).withProperty(POTION, (meta & 1) > 0);
     }
 
     public BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, LEVEL);
+        return new BlockStateContainer(this, LEVEL, POTION);
     }
 
     public EnumBlockRenderType getRenderType(IBlockState state) {
