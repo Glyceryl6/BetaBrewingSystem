@@ -35,7 +35,7 @@ import java.util.Objects;
 
 public class ItemBrewingCauldronPotion extends Item {
 
-    private final HashMap<Object, Object> a = new HashMap<>();
+    private static final HashMap<Object, Object> a = new HashMap<>();
 
     public ItemBrewingCauldronPotion() {
         setMaxStackSize(1);
@@ -43,12 +43,12 @@ public class ItemBrewingCauldronPotion extends Item {
         setHasSubtypes(false);
     }
 
-    public List a_(ItemStack itemStack) {
+    public static List a_(ItemStack itemStack) {
         int i = itemStack.getItemDamage();
-        List list = (List)this.a.get(i);
+        List list = (List)a.get(i);
         if (list == null) {
             list = PotionHelperCauldron.getPotionEffects(i);
-            this.a.put(i, list);
+            a.put(i, list);
         }
         return list;
     }
@@ -96,7 +96,6 @@ public class ItemBrewingCauldronPotion extends Item {
         return EnumAction.DRINK;
     }
 
-    @ParametersAreNonnullByDefault
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
         player.setActiveHand(hand);
         return new ActionResult(EnumActionResult.SUCCESS, player.getHeldItem(hand));
@@ -111,9 +110,13 @@ public class ItemBrewingCauldronPotion extends Item {
     }
 
     @SideOnly(Side.CLIENT)
-    @SuppressWarnings("deprecation")
     public void addInformation(ItemStack itemStack, World world, List<String> lore, ITooltipFlag bool) {
-        List<PotionEffect> list = this.a_(itemStack);
+        this.addPotionInformation(itemStack, lore, 1.0F);
+    }
+
+    @SuppressWarnings("deprecation")
+    public void addPotionInformation(ItemStack itemStack, List<String> lore, float durationFactor) {
+        List<PotionEffect> list = a_(itemStack);
         List<Tuple<String, AttributeModifier>> list1 = Lists.newArrayList();
         if (list != null && !list.isEmpty()) {
             for (PotionEffect potionEffect : list) {
@@ -134,7 +137,7 @@ public class ItemBrewingCauldronPotion extends Item {
                 }
 
                 if (potionEffect.getDuration() > 20) {
-                    s1 = s1 + " (" + Potion.getPotionDurationString(potionEffect, 1.0F) + ")";
+                    s1 = s1 + " (" + Potion.getPotionDurationString(potionEffect, durationFactor) + ")";
                 }
 
                 if (potion.isBadEffect()) {

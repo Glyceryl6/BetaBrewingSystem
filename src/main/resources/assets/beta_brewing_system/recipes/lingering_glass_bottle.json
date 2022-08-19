@@ -1,0 +1,19 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "#W#",
+        " # "
+    ],
+    "key": {
+        "#": {
+            "item": "minecraft:glass"
+        },
+        "W": {
+            "item": "minecraft:dragon_breath"
+        }
+    },
+    "result": {
+        "item": "minecraft:lingering_glass_bottle",
+        "count": 3
+    }
+}

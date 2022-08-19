@@ -109,9 +109,19 @@ public class BlockBrewingCauldron extends BlockContainer {
             }
             return true;
         }
-        if (heldItemStack.getItem() == Items.GLASS_BOTTLE) {
+        if (heldItemStack.getItem() == Items.GLASS_BOTTLE ||
+                heldItemStack.getItem() == Cauldron.SPLASH_GLASS_BOTTLE ||
+                heldItemStack.getItem() == Cauldron.LINGERING_GLASS_BOTTLE) {
             if (!entityBrewingCauldron.isCauldronEmpty()) {
-                ItemStack potionItemStack = new ItemStack(Cauldron.POTION_ITEM, 1, entityBrewingCauldron.getLiquidData());
+                Item potionItem;
+                if (heldItemStack.getItem() == Items.GLASS_BOTTLE) {
+                    potionItem = Cauldron.POTION_ITEM;
+                } else if (heldItemStack.getItem() == Cauldron.SPLASH_GLASS_BOTTLE) {
+                    potionItem = Cauldron.SPLASH_POTION_ITEM;
+                } else {
+                    potionItem = Cauldron.LINGERING_POTION_ITEM;
+                }
+                ItemStack potionItemStack = new ItemStack(potionItem, 1, entityBrewingCauldron.getLiquidData());
                 NBTTagCompound compoundTag = new NBTTagCompound();
                 if (!potionItemStack.hasTagCompound()) {
                     potionItemStack.setTagCompound(compoundTag);
@@ -124,12 +134,12 @@ public class BlockBrewingCauldron extends BlockContainer {
                 }
                 if (!player.capabilities.isCreativeMode) {
                     heldItemStack.stackSize--;
+                    entityBrewingCauldron.decrementLiquidLevel();
+                    setWaterLevel(world, pos, state, state.getValue(LEVEL) - 1);
                 }
                 if (heldItemStack.stackSize <= 0) {
                     player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
                 }
-                entityBrewingCauldron.decrementLiquidLevel();
-                setWaterLevel(world, pos, state, state.getValue(LEVEL) - 1);
                 world.playSound(null, pos, SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
         } else if (entityBrewingCauldron.applyIngredient(heldItemStack)) {
