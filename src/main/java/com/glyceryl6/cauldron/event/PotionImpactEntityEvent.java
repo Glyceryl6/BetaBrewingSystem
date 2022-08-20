@@ -8,15 +8,12 @@ import net.minecraft.entity.monster.EntityBlaze;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.projectile.EntityPotion;
 import net.minecraft.entity.projectile.EntityThrowable;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -29,17 +26,10 @@ public class PotionImpactEntityEvent {
     public void onPotionImpactEntity(ProjectileImpactEvent.Throwable event) {
         EntityThrowable throwable = event.getThrowable();
         if (throwable instanceof EntityPotion && !throwable.world.isRemote) {
-            RayTraceResult result = event.getRayTraceResult();
             EntityPotion entityPotion = (EntityPotion) throwable;
+            RayTraceResult result = event.getRayTraceResult();
             ItemStack itemStack = this.getPotion(entityPotion);
             List<PotionEffect> potionEffects = ItemBrewingCauldronPotion.a_(itemStack);
-            if (result.typeOfHit == RayTraceResult.Type.BLOCK) {
-                BlockPos blockpos = result.getBlockPos().offset(result.sideHit);
-                this.extinguishFires(entityPotion, entityPotion.getPosition(), result.sideHit);
-                for (EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL) {
-                    this.extinguishFires(entityPotion, blockpos.offset(enumfacing), enumfacing);
-                }
-            }
             if (potionEffects != null && !potionEffects.isEmpty()) {
                 this.applyWater(entityPotion);
                 if (this.getPotion(entityPotion).getItem() == Cauldron.LINGERING_POTION_ITEM) {
@@ -48,7 +38,6 @@ public class PotionImpactEntityEvent {
                     this.applySplash(entityPotion, result, potionEffects);
                 }
             }
-            entityPotion.setDead();
         }
     }
 
@@ -72,12 +61,6 @@ public class PotionImpactEntityEvent {
                     entitylivingbase.attackEntityFrom(DamageSource.DROWN, 1.0F);
                 }
             }
-        }
-    }
-
-    private void extinguishFires(EntityPotion potion, BlockPos pos, EnumFacing facing) {
-        if (potion.world.getBlockState(pos).getBlock() == Blocks.FIRE) {
-            potion.world.extinguishFire(null, pos.offset(facing), facing.getOpposite());
         }
     }
 
