@@ -6,41 +6,71 @@ import net.minecraft.entity.EntityAreaEffectCloud;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.monster.EntityBlaze;
 import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.entity.projectile.EntityPotion;
 import net.minecraft.entity.projectile.EntityThrowable;
-import net.minecraft.entity.projectile.EntityTippedArrow;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.List;
 
 public class PotionImpactEntityEvent {
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onPotionImpactEntity(ProjectileImpactEvent.Throwable event) {
         EntityThrowable throwable = event.getThrowable();
         if (throwable instanceof EntityPotion && !throwable.world.isRemote) {
             EntityPotion entityPotion = (EntityPotion) throwable;
-            RayTraceResult result = event.getRayTraceResult();
-            ItemStack itemStack = this.getPotion(entityPotion);
-            List<PotionEffect> potionEffects = ItemBrewingCauldronPotion.a_(itemStack);
-            if (potionEffects != null && !potionEffects.isEmpty()) {
-                this.applyWater(entityPotion);
-                if (this.getPotion(entityPotion).getItem() == Cauldron.LINGERING_POTION_ITEM) {
-                    this.makeAreaOfEffectCloud(entityPotion, itemStack);
-                } else {
-                    this.applySplash(entityPotion, result, potionEffects);
+            if (this.isSpecialPotion(entityPotion.getDataManager().get(EntityPotion.ITEM))) {
+                RayTraceResult result = event.getRayTraceResult();
+                ItemStack itemStack = this.getPotion(entityPotion);
+                NBTTagCompound compound = itemStack.getTagCompound();
+                List<PotionEffect> potionEffects = ItemBrewingCauldronPotion.a_(itemStack);
+                if (result.typeOfHit == RayTraceResult.Type.BLOCK) {
+                    BlockPos blockPos = result.getBlockPos().offset(result.sideHit);
+                    this.extinguishFires(entityPotion, blockPos, result.sideHit);
+                    for (EnumFacing facing : EnumFacing.Plane.HORIZONTAL) {
+                        this.extinguishFires(entityPotion, blockPos.offset(facing), facing);
+                    }
                 }
+
+                if (potionEffects != null && !potionEffects.isEmpty()) {
+                    this.applyWater(entityPotion);
+                    if (this.getPotion(entityPotion).getItem() == Cauldron.LINGERING_POTION_ITEM) {
+                        this.makeAreaOfEffectCloud(entityPotion, itemStack);
+                    } else {
+                        this.applySplash(entityPotion, result, potionEffects);
+                    }
+                }
+
+                int color = compound != null ? compound.getInteger("Color") : 16253176;
+                entityPotion.world.playEvent(2007, new BlockPos(entityPotion), color);
+                entityPotion.setDead();
+                event.setCanceled(true);
             }
         }
+    }
+
+    private void extinguishFires(EntityPotion entityPotion, BlockPos pos, EnumFacing facing) {
+        if (entityPotion.world.getBlockState(pos).getBlock() == Blocks.FIRE) {
+            entityPotion.world.extinguishFire(null, pos.offset(facing), facing.getOpposite());
+        }
+    }
+
+    private boolean isSpecialPotion(ItemStack itemStack) {
+        Item item = itemStack.getItem();
+        return item == Cauldron.SPLASH_POTION_ITEM || item == Cauldron.LINGERING_POTION_ITEM;
     }
 
     public ItemStack getPotion(EntityPotion potion) {

@@ -3,13 +3,20 @@ package com.glyceryl6.cauldron;
 import com.glyceryl6.cauldron.block.BlockBrewingCauldron;
 import com.glyceryl6.cauldron.block.EntityBrewingCauldron;
 import com.glyceryl6.cauldron.event.PotionImpactEntityEvent;
-import com.glyceryl6.cauldron.item.*;
+import com.glyceryl6.cauldron.item.ItemBrewingCauldronLingeringPotion;
+import com.glyceryl6.cauldron.item.ItemBrewingCauldronPotion;
+import com.glyceryl6.cauldron.item.ItemBrewingCauldronSplashPotion;
+import com.glyceryl6.cauldron.item.ItemBrewingCauldronTippedArrow;
+import com.glyceryl6.cauldron.render.PotionRenderExtend;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.color.BlockColors;
 import net.minecraft.client.renderer.color.ItemColors;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.projectile.EntityPotion;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlockSpecial;
 import net.minecraft.nbt.NBTTagCompound;
@@ -57,7 +64,18 @@ public class Cauldron {
         String path = "brewing_cauldron_block_entity";
         ResourceLocation resource = new ResourceLocation(MODID, path);
         GameRegistry.registerTileEntity(EntityBrewingCauldron.class, resource);
+        this.registerPotionRender();
         this.registerColors();
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void registerPotionRender() {
+        Minecraft minecraft = Minecraft.getMinecraft();
+        RenderItem renderItem = minecraft.getRenderItem();
+        RenderManager renderManager = minecraft.getRenderManager();
+        renderManager.entityRenderMap.keySet().remove(EntityPotion.class);
+        renderManager.entityRenderMap.put(EntityPotion.class,
+                new PotionRenderExtend(renderManager, renderItem));
     }
 
     @SideOnly(Side.CLIENT)
