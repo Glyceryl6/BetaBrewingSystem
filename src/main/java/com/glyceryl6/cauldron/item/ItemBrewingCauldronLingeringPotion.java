@@ -1,13 +1,12 @@
 package com.glyceryl6.cauldron.item;
 
-import com.glyceryl6.cauldron.Cauldron;
 import com.glyceryl6.cauldron.block.PotionHelperCauldron;
+import com.glyceryl6.cauldron.util.PotionUtil;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityPotion;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
@@ -33,7 +32,7 @@ public class ItemBrewingCauldronLingeringPotion extends ItemBrewingCauldronPotio
 
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack itemStack, World world, List<String> lore, ITooltipFlag bool) {
-        this.addPotionInformation(itemStack, lore, 0.25F);
+        PotionUtil.addPotionInformation(itemStack, lore, 0.25F);
     }
 
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {

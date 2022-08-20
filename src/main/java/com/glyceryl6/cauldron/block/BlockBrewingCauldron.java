@@ -98,7 +98,6 @@ public class BlockBrewingCauldron extends BlockContainer {
         EntityBrewingCauldron entityBrewingCauldron = (EntityBrewingCauldron)tileEntity;
         int cauldronMetadata = entityBrewingCauldron.getLiquidData();
         if (heldItemStack.getItem() == Items.WATER_BUCKET) {
-            //setWaterLevel(world, pos, state, 3);
             if (entityBrewingCauldron.fillCauldronWithWaterBucket()) {
                 if (!player.capabilities.isCreativeMode) {
                     heldItemStack.shrink(1);
@@ -145,6 +144,51 @@ public class BlockBrewingCauldron extends BlockContainer {
                 }
                 world.playSound(null, pos, SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
+        } else if (heldItemStack.getItem() == Items.ARROW) {
+            int arrowCount;
+            ItemStack potionArrowStack = new ItemStack(Cauldron.TIPPED_ARROW_ITEM);
+            potionArrowStack.setItemDamage(entityBrewingCauldron.getLiquidData());
+            if (heldItemStack.getCount() >= 64) {
+                switch (entityBrewingCauldron.getLiquidLevel()) {
+                    case 3: arrowCount = 64; break;
+                    case 2: arrowCount = 32; break;
+                    default: arrowCount = 16;
+                }
+            } else if (heldItemStack.getCount() >= 32) {
+                switch (entityBrewingCauldron.getLiquidLevel()) {
+                    case 3: arrowCount = heldItemStack.getCount(); break;
+                    case 2: arrowCount = 32; break;
+                    default: arrowCount = 16;
+                }
+            } else if (heldItemStack.getCount() >= 16) {
+                switch (entityBrewingCauldron.getLiquidLevel()) {
+                    case 3:
+                    case 2: arrowCount = heldItemStack.getCount(); break;
+                    default: arrowCount = 16;
+                }
+            } else {
+                arrowCount = 16;
+            }
+            potionArrowStack.setCount(arrowCount);
+            NBTTagCompound compoundTag = new NBTTagCompound();
+            if (!potionArrowStack.hasTagCompound()) {
+                potionArrowStack.setTagCompound(compoundTag);
+            }
+            compoundTag.setBoolean("Unbreakable", true);
+            compoundTag.setInteger("HideFlags", 4);
+            compoundTag.setInteger("Color", Math.abs(entityBrewingCauldron.getLiquidColor()));
+            if (!player.inventory.addItemStackToInventory(potionArrowStack)) {
+                world.spawnEntity(new EntityItem(world, pos.getX() + 0.5D, pos.getY() + 1.5D, pos.getZ() + 0.5D, potionArrowStack));
+            }
+            if (!player.capabilities.isCreativeMode) {
+                heldItemStack.shrink(arrowCount);
+                entityBrewingCauldron.decrementLiquidLevel();
+                this.updateBlockState(world, pos, state, state.getValue(LEVEL) - 1, entityBrewingCauldron.getLiquidData() != 0);
+            }
+            if (heldItemStack.stackSize <= 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
+            }
+            world.playSound(null, pos, SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
         } else if (entityBrewingCauldron.applyIngredient(heldItemStack)) {
             this.updateBlockState(world, pos, state, state.getValue(LEVEL), true);
             if (heldItemStack.getItem() == Cauldron.POTION_ITEM) {

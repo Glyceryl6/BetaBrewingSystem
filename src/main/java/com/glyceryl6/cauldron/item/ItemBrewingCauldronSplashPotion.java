@@ -1,12 +1,10 @@
 package com.glyceryl6.cauldron.item;
 
-import com.glyceryl6.cauldron.Cauldron;
 import com.glyceryl6.cauldron.block.PotionHelperCauldron;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityPotion;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;

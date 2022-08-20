@@ -43,6 +43,7 @@ public class Cauldron {
     public static ItemBrewingCauldronPotion POTION_ITEM;
     public static ItemBrewingCauldronSplashPotion SPLASH_POTION_ITEM;
     public static ItemBrewingCauldronLingeringPotion LINGERING_POTION_ITEM;
+    public static ItemBrewingCauldronTippedArrow TIPPED_ARROW_ITEM;
     public static BlockBrewingCauldron BREWING_CAULDRON_BLOCK;
 
     @EventHandler
@@ -67,7 +68,7 @@ public class Cauldron {
         itemColors.registerItemColorHandler((stack, tintIndex) -> {
             NBTTagCompound compound = stack.getTagCompound();
             return compound != null ? (tintIndex > 0 ? compound.getInteger("Color") : -1) : -1;
-        }, POTION_ITEM, SPLASH_POTION_ITEM, LINGERING_POTION_ITEM);
+        }, POTION_ITEM, SPLASH_POTION_ITEM, LINGERING_POTION_ITEM, TIPPED_ARROW_ITEM);
         blockColors.registerBlockColorHandler((state, world, pos, tintIndex) -> {
             int color = -1;
             if (world != null && pos != null && tintIndex == 0) {
@@ -103,7 +104,8 @@ public class Cauldron {
         POTION_ITEM = (ItemBrewingCauldronPotion) (new ItemBrewingCauldronPotion()).setUnlocalizedName("potion_cauldron").setRegistryName(MODID, "potion_cauldron");
         SPLASH_POTION_ITEM = (ItemBrewingCauldronSplashPotion) (new ItemBrewingCauldronSplashPotion()).setUnlocalizedName("splash_potion_cauldron").setRegistryName(MODID, "splash_potion_cauldron");
         LINGERING_POTION_ITEM = (ItemBrewingCauldronLingeringPotion) (new ItemBrewingCauldronLingeringPotion()).setUnlocalizedName("lingering_potion_cauldron").setRegistryName(MODID, "lingering_potion_cauldron");
-        event.getRegistry().registerAll(BREWING_CAULDRON, SPLASH_GLASS_BOTTLE, LINGERING_GLASS_BOTTLE, POTION_ITEM, SPLASH_POTION_ITEM, LINGERING_POTION_ITEM);
+        TIPPED_ARROW_ITEM = (ItemBrewingCauldronTippedArrow) (new ItemBrewingCauldronTippedArrow()).setUnlocalizedName("potion_arrow").setRegistryName(MODID, "potion_arrow");
+        event.getRegistry().registerAll(BREWING_CAULDRON, SPLASH_GLASS_BOTTLE, LINGERING_GLASS_BOTTLE, POTION_ITEM, SPLASH_POTION_ITEM, LINGERING_POTION_ITEM, TIPPED_ARROW_ITEM);
     }
 
     @SubscribeEvent
@@ -115,6 +117,7 @@ public class Cauldron {
         ModelLoader.setCustomModelResourceLocation(POTION_ITEM, 0, new ModelResourceLocation(POTION_ITEM.getRegistryName(), "inventory"));
         ModelLoader.setCustomModelResourceLocation(SPLASH_POTION_ITEM, 0, new ModelResourceLocation(SPLASH_POTION_ITEM.getRegistryName(), "inventory"));
         ModelLoader.setCustomModelResourceLocation(LINGERING_POTION_ITEM, 0, new ModelResourceLocation(LINGERING_POTION_ITEM.getRegistryName(), "inventory"));
+        ModelLoader.setCustomModelResourceLocation(TIPPED_ARROW_ITEM, 0, new ModelResourceLocation(TIPPED_ARROW_ITEM.getRegistryName(), "inventory"));
     }
 
 }

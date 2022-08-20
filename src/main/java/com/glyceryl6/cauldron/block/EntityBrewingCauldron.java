@@ -91,6 +91,10 @@ public class EntityBrewingCauldron extends TileEntity {
         this.liquidLevel--;
     }
 
+    public int getLiquidLevel() {
+        return this.liquidLevel;
+    }
+
     public int getLiquidData() {
         return this.liquidData;
     }

@@ -6,8 +6,10 @@ import net.minecraft.entity.EntityAreaEffectCloud;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.monster.EntityBlaze;
 import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.entity.projectile.EntityPotion;
 import net.minecraft.entity.projectile.EntityThrowable;
+import net.minecraft.entity.projectile.EntityTippedArrow;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
@@ -21,6 +23,14 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import java.util.List;
 
 public class PotionImpactEntityEvent {
+
+    @SubscribeEvent
+    public void onArrowImpactEntity(ProjectileImpactEvent.Arrow event) {
+        EntityArrow arrow = event.getArrow();
+        if (arrow instanceof EntityTippedArrow) {
+
+        }
+    }
 
     @SubscribeEvent
     public void onPotionImpactEntity(ProjectileImpactEvent.Throwable event) {
