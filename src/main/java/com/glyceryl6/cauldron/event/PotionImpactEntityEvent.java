@@ -25,14 +25,6 @@ import java.util.List;
 public class PotionImpactEntityEvent {
 
     @SubscribeEvent
-    public void onArrowImpactEntity(ProjectileImpactEvent.Arrow event) {
-        EntityArrow arrow = event.getArrow();
-        if (arrow instanceof EntityTippedArrow) {
-
-        }
-    }
-
-    @SubscribeEvent
     public void onPotionImpactEntity(ProjectileImpactEvent.Throwable event) {
         EntityThrowable throwable = event.getThrowable();
         if (throwable instanceof EntityPotion && !throwable.world.isRemote) {
