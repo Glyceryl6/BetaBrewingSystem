@@ -1,0 +1,28 @@
+{
+    "variants": {
+        "level=0,potion=false": {
+            "model": "beta_brewing_system:block/brewing_cauldron_empty"
+        },
+        "level=0,potion=true": {
+            "model": "beta_brewing_system:block/brewing_cauldron_empty"
+        },
+        "level=1,potion=false": {
+            "model": "beta_brewing_system:block/brewing_cauldron_level_1"
+        },
+        "level=1,potion=true": {
+            "model": "beta_brewing_system:block/brewing_cauldron_level_1_potion"
+        },
+        "level=2,potion=false": {
+            "model": "beta_brewing_system:block/brewing_cauldron_level_2"
+        },
+        "level=2,potion=true": {
+            "model": "beta_brewing_system:block/brewing_cauldron_level_2_potion"
+        },
+        "level=3,potion=false": {
+            "model": "beta_brewing_system:block/brewing_cauldron_full"
+        },
+        "level=3,potion=true": {
+            "model": "beta_brewing_system:block/brewing_cauldron_full_potion"
+        }
+    }
+}
