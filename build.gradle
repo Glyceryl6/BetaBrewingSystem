@@ -6,7 +6,6 @@ buildscript {
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        classpath 'org.spongepowered:mixingradle:0.7.+'
         classpath 'org.parchmentmc:librarian:1.+'
     }
 }
@@ -17,7 +16,6 @@ plugins {
 }
 
 apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
 version = '1.0'
@@ -94,7 +92,9 @@ minecraft {
     }
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+}
 
 repositories {
 
@@ -115,9 +115,6 @@ dependencies {
 
     implementation fg.deobf("curse.maven:jei_integration-265917:3812175")
 
-    // Apply Mixin AP
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-
     // compile against the JEI API but do not include it at runtime
     compileOnly fg.deobf("mezz.jei:jei-1.18.2:9.7.0.193:api")
     // at runtime, use the full JEI jar
@@ -128,22 +125,16 @@ dependencies {
 jar {
     manifest {
         attributes([
-                'FMLAT': 'accesstransformer.cfg',
-                "Specification-Title"     : "examplemod",
-                "Specification-Vendor"    : "examplemodsareus",
-                "Specification-Version"   : "1", // We are version 1 of ourselves
-                "Implementation-Title"    : project.name,
-                "Implementation-Version"  : project.jar.archiveVersion,
-                "Implementation-Vendor"   : "examplemodsareus",
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+            'FMLAT': 'accesstransformer.cfg',
+            "Specification-Title"     : "examplemod",
+            "Specification-Vendor"    : "examplemodsareus",
+            "Specification-Version"   : "1", // We are version 1 of ourselves
+            "Implementation-Title"    : project.name,
+            "Implementation-Version"  : project.jar.archiveVersion,
+            "Implementation-Vendor"   : "examplemodsareus",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
-}
-
-mixin {
-    // MixinGradle Settings
-    add sourceSets.main, 'mixins.cw.refmap.json'
-    config 'mixins.cw.json'
 }
 
 jar.finalizedBy('reobfJar')
