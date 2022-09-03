@@ -1,0 +1,19 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "#W#",
+        " # "
+    ],
+    "key": {
+        "#": {
+            "item": "minecraft:glass"
+        },
+        "W": {
+            "item": "minecraft:gunpowder"
+        }
+    },
+    "result": {
+        "item": "minecraft:splash_glass_bottle",
+        "count": 3
+    }
+}
