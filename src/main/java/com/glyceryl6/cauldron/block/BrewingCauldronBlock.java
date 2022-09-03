@@ -79,13 +79,6 @@ public class BrewingCauldronBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void onPlace(BlockState newState, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
-        if (!level.isClientSide && oldState.getBlock() != newState.getBlock()) {
-            level.removeBlockEntity(pos);
-        }
-    }
-
-    @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
     }
