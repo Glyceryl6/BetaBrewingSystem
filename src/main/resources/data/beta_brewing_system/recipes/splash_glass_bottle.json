@@ -13,7 +13,7 @@
         }
     },
     "result": {
-        "item": "minecraft:splash_glass_bottle",
+        "item": "beta_brewing_system:splash_glass_bottle",
         "count": 3
     }
 }

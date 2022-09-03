@@ -13,7 +13,7 @@
         }
     },
     "result": {
-        "item": "minecraft:lingering_glass_bottle",
+        "item": "beta_brewing_system:lingering_glass_bottle",
         "count": 3
     }
 }
