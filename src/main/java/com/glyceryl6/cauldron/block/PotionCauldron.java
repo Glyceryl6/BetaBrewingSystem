@@ -1,6 +1,5 @@
 package com.glyceryl6.cauldron.block;
 
-@SuppressWarnings("unused")
 public class PotionCauldron {
 
     public static final PotionCauldron[] potionTypes = new PotionCauldron[32];

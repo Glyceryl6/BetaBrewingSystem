@@ -27,6 +27,7 @@ import java.util.List;
 
 public class PotionImpactEntityEvent {
 
+    @SuppressWarnings("unchecked")
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onPotionImpactEntity(ProjectileImpactEvent.Throwable event) {
         EntityThrowable throwable = event.getThrowable();

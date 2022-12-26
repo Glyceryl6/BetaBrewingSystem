@@ -47,20 +47,19 @@ public class EntityBrewingCauldron extends TileEntity {
     }
 
     @Override
-    public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate) {
-        return oldState.getBlock() != newSate.getBlock();
+    public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
+        return oldState.getBlock() != newState.getBlock();
     }
 
     public boolean applyIngredient(ItemStack itemstack) {
-        if (itemstack.getItem() == Cauldron.POTION_ITEM ||
-                (itemstack.getItem() == Items.POTIONITEM &&
-                        itemstack.getItemDamage() == 0 &&
-                        (isCauldronDataZero() || isCauldronEmpty()))) {
-            if (isCauldronEmpty()) {
+        if (itemstack.getItem() == Cauldron.POTION_ITEM || (itemstack.getItem() == Items.GLASS_BOTTLE &&
+                        itemstack.getItemDamage() == 0 && (isCauldronDataZero() || isCauldronEmpty()))) {
+            //由于Bug，暂时先注释掉该段代码。
+         /* if (isCauldronEmpty()) {
                 this.liquidLevel = 1;
-                this.liquidData = itemstack.getItemDamage();
+                this.liquidData = itemStack.getItemDamage();
                 return true;
-            }
+            } */
             if (this.liquidData == itemstack.getItemDamage() && this.liquidLevel < 3) {
                 this.liquidLevel++;
                 return true;
@@ -71,6 +70,10 @@ public class EntityBrewingCauldron extends TileEntity {
             int i = PotionHelperCauldron.applyNetherWart(this.liquidData);
             if (i != this.liquidData) {
                 this.liquidData = i;
+                if (this.liquidData >= 32767) {
+                    this.liquidData = 32766;
+                }
+                System.out.println(this.liquidData);
                 return true;
             }
             return false;
@@ -80,6 +83,10 @@ public class EntityBrewingCauldron extends TileEntity {
             int i = PotionHelperCauldron.applyIngredient(this.liquidData, potionEffect);
             if (i != this.liquidData) {
                 this.liquidData = i;
+                if (this.liquidData >= 32767) {
+                    this.liquidData = 32766;
+                }
+                System.out.println(this.liquidData);
                 return true;
             }
             return false;

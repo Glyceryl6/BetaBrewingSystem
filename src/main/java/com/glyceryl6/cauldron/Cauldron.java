@@ -2,13 +2,17 @@ package com.glyceryl6.cauldron;
 
 import com.glyceryl6.cauldron.block.BlockBrewingCauldron;
 import com.glyceryl6.cauldron.block.EntityBrewingCauldron;
+import com.glyceryl6.cauldron.dispenser.DispenserShootLingeringPotion;
+import com.glyceryl6.cauldron.dispenser.DispenserShootSplashPotion;
 import com.glyceryl6.cauldron.event.PotionImpactEntityEvent;
 import com.glyceryl6.cauldron.item.ItemBrewingCauldronLingeringPotion;
 import com.glyceryl6.cauldron.item.ItemBrewingCauldronPotion;
 import com.glyceryl6.cauldron.item.ItemBrewingCauldronSplashPotion;
 import com.glyceryl6.cauldron.item.ItemBrewingCauldronTippedArrow;
 import com.glyceryl6.cauldron.render.PotionRenderExtend;
+import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDispenser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -16,12 +20,19 @@ import net.minecraft.client.renderer.color.BlockColors;
 import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.dispenser.BehaviorProjectileDispense;
+import net.minecraft.dispenser.IPosition;
+import net.minecraft.entity.IProjectile;
+import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.entity.projectile.EntityPotion;
+import net.minecraft.entity.projectile.EntityTippedArrow;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlockSpecial;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeColorHelper;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
@@ -64,12 +75,26 @@ public class Cauldron {
         String path = "brewing_cauldron_block_entity";
         ResourceLocation resource = new ResourceLocation(MODID, path);
         GameRegistry.registerTileEntity(EntityBrewingCauldron.class, resource);
+        this.registerDispenserBehaviors();
         this.registerPotionRender();
         this.registerColors();
     }
 
+    @MethodsReturnNonnullByDefault
+    private void registerDispenserBehaviors() {
+        BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(SPLASH_POTION_ITEM, new DispenserShootSplashPotion());
+        BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(LINGERING_POTION_ITEM, new DispenserShootLingeringPotion());
+        BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(TIPPED_ARROW_ITEM, new BehaviorProjectileDispense() {
+            protected IProjectile getProjectileEntity(World world, IPosition position, ItemStack stack) {
+                EntityTippedArrow tippedArrow = new EntityTippedArrow(world, position.getX(), position.getY(), position.getZ());
+                tippedArrow.pickupStatus = EntityArrow.PickupStatus.ALLOWED;
+                return tippedArrow;
+            }
+        });
+    }
+
     @SideOnly(Side.CLIENT)
-    public void registerPotionRender() {
+    private void registerPotionRender() {
         Minecraft minecraft = Minecraft.getMinecraft();
         RenderItem renderItem = minecraft.getRenderItem();
         RenderManager renderManager = minecraft.getRenderManager();
@@ -79,7 +104,7 @@ public class Cauldron {
     }
 
     @SideOnly(Side.CLIENT)
-    public void registerColors() {
+    private void registerColors() {
         Minecraft minecraft = Minecraft.getMinecraft();
         ItemColors itemColors = minecraft.getItemColors();
         BlockColors blockColors = minecraft.getBlockColors();

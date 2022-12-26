@@ -39,8 +39,8 @@ import java.util.Random;
 @SuppressWarnings("deprecation")
 public class BlockBrewingCauldron extends BlockContainer {
 
-    private static final PropertyBool POTION = PropertyBool.create("potion");
-    private static final PropertyInteger LEVEL = PropertyInteger.create("level", 0, 3);
+    public static final PropertyBool POTION = PropertyBool.create("potion");
+    public static final PropertyInteger LEVEL = PropertyInteger.create("level", 0, 3);
     private static final AxisAlignedBB AABB_LEGS = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 0.3125D, 1.0D);
     private static final AxisAlignedBB AABB_WALL_EAST = new AxisAlignedBB(0.875D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
     private static final AxisAlignedBB AABB_WALL_WEST = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.125D, 1.0D, 1.0D);
@@ -50,7 +50,9 @@ public class BlockBrewingCauldron extends BlockContainer {
     public BlockBrewingCauldron() {
         super(Material.IRON, MapColor.STONE);
         this.setHarvestLevel("pickaxe", 0);
-        this.setDefaultState(this.blockState.getBaseState().withProperty(LEVEL, 0).withProperty(POTION, false));
+        this.setDefaultState(this.blockState.getBaseState()
+                .withProperty(LEVEL, 0)
+                .withProperty(POTION, false));
     }
 
     @Nullable
@@ -77,6 +79,18 @@ public class BlockBrewingCauldron extends BlockContainer {
     public void onEntityCollidedWithBlock(World world, BlockPos pos, IBlockState state, Entity entity) {
         int i = state.getValue(LEVEL);
         float f = (float)pos.getY() + (6.0F + (float)(3 * i)) / 16.0F;
+        TileEntity tileEntity = world.getTileEntity(pos);
+        EntityBrewingCauldron entityBrewingCauldron = (EntityBrewingCauldron)tileEntity;
+        if (entity instanceof EntityItem) {
+            EntityItem entityItem = (EntityItem)entity;
+            ItemStack itemStack = entityItem.getItem();
+            if (entityBrewingCauldron != null && entityBrewingCauldron.applyIngredient(itemStack)) {
+                world.playSound(null, pos, SoundEvents.ITEM_BUCKET_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                this.updateBlockState(world, pos, state, state.getValue(LEVEL), true);
+                world.notifyBlockUpdate(pos, state, state, 3);
+                itemStack.shrink(1);
+            }
+        }
         if (!world.isRemote && entity.isBurning() && i > 0 && entity.getEntityBoundingBox().minY <= (double)f) {
             entity.extinguish();
         }
@@ -114,7 +128,7 @@ public class BlockBrewingCauldron extends BlockContainer {
         if (heldItemStack.getItem() == Items.GLASS_BOTTLE ||
                 heldItemStack.getItem() == Cauldron.SPLASH_GLASS_BOTTLE ||
                 heldItemStack.getItem() == Cauldron.LINGERING_GLASS_BOTTLE) {
-            if (!entityBrewingCauldron.isCauldronEmpty()) {
+            if (!entityBrewingCauldron.isCauldronEmpty() && !entityBrewingCauldron.isCauldronDataZero()) {
                 Item potionItem;
                 if (heldItemStack.getItem() == Items.GLASS_BOTTLE) {
                     potionItem = Cauldron.POTION_ITEM;

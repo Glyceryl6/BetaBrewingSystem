@@ -55,6 +55,7 @@ public class ItemBrewingCauldronTippedArrow extends ItemArrow {
         return nbttagcompound != null ? nbttagcompound.getInteger("Color") : -1;
     }
 
+    @SuppressWarnings("unchecked")
     public void setPotionEffect(ItemStack stack, EntityTippedArrow tippedArrow) {
         if (stack.getItem() == Cauldron.TIPPED_ARROW_ITEM) {
             Collection<PotionEffect> collection = ItemBrewingCauldronPotion.a_(stack);

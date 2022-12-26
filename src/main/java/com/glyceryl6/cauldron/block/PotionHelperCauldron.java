@@ -185,8 +185,9 @@ public class PotionHelperCauldron {
                         String str2 = (String)potionAmplifiers.get(localPotionCauldron.getId());
                         if (str2 != null) {
                             m = a(str2, 0, str2.length(), damage);
-                            if (m < 0)
+                            if (m < 0) {
                                 m = 0;
+                            }
                         }
                         if (localPotionCauldron.isInstant()) {
                             k = 1;
